@@ -1,6 +1,6 @@
 from map import *
 from characters import Character
-import combat, dialog, NPC
+import combat, dialog, NPC, core
 
 class StoneWall(MapBase):
     def __init__(self):
@@ -57,4 +57,4 @@ class StoneWall(MapBase):
     
     def random_fight(self):
         monster = combat.gallery.generate_monster(1)
-        combat.Combat(self.hero, monster, pygame.display.get_surface())
+        combat.Combat(core.game.save_data.hero, monster, core.screen)
