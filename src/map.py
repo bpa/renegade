@@ -79,6 +79,7 @@ class MapBase:
         self.tile_manager.clear()
 
     def get(self, x, y):
+        if x<0 or y<0: return None
         try:
             return self.cols[x][y]
         except:
@@ -157,6 +158,7 @@ class MapBase:
         # The main event loop for rendering the map
         clock = pygame.time.Clock()
         event_bag = events.EventUtil()
+        iteration = 1
         while True:
             clock.tick(20)
         

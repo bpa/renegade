@@ -30,28 +30,9 @@ class game:
             print 'Unable to initialize font subsystem'
             exit
 
-        clock = pygame.time.Clock()
-        while True:
-            clock.tick(20)
-        
-            for event in pygame.event.get():
-                if event.type == QUIT:
-                    return
-                elif event.type == KEYDOWN:
-                    if event.key == K_ESCAPE:
-                        return
-                    elif event.key == K_LEFT:
-                        self.left_event()
-                    elif event.key == K_RIGHT:
-                        self.right_event()
-                    elif event.key == K_UP:
-                        self.up_event()
-                    elif event.key == K_DOWN:
-                        self.down_event()
-            
-            self.save_data.map.update()
-            self.save_data.map.draw(self.screen)
-            pygame.display.flip()
+        print "Running map..."
+        ret = self.save_data.map.run(self.screen)
+        print "Map completed with return value: ", ret
 
     def up_event(self):
         self.save_data.map.move_character_up()
