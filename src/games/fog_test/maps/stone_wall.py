@@ -1,4 +1,4 @@
-from map import MapBase
+from map import *
 from characters import Character
 import dialog
 
@@ -15,9 +15,11 @@ class StoneWall(MapBase):
         self.set_location( (7,0), 'stone', False )
 
         # Put a wise dude here, to talk to.
-        sprite = Character( ('dude1', 'dude2') )
-        self.place_sprite( sprite, (8,1) )
-        self.get(8,1).set_walkable( False )
+        sprite = Character('dude_map')
+        self.place_entity( sprite, (8,1) )
+        sprite.face(SOUTH)
+        sprite.always_animate = True
+        sprite.animation_speed = 10
         self.add_entry_listener(8,2, self.walk_in_front_of_dude)
 
     def walk_in_front_of_dude(self):
@@ -26,15 +28,15 @@ class StoneWall(MapBase):
                        "least two lines, perhaps several more!  And as " +
                        "a special feature, if this first line is longer " +
                        "than the next dialog, then it will even be trimmed " +
-                       "properly!")       
+                       "properly!")
         choice = dialog.question(
            "Since this is a very very wise man, he has much " +
            "to say to you.  This may even spill over into " +
-           "another dialog!", 
-           [ "No, make it stop!", 
+           "another dialog!",
+           [ "No, make it stop!",
              "Yes, Continue!",
              "I can't decide",
-             "Who knows?" ])       
+             "Who knows?" ])
         
         if choice == "No, make it stop!":
             dialog.message("No! Stopping is not an option!")

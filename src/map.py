@@ -1,17 +1,139 @@
 import os
+from util import load_image
 import pygame
 import pygame.image
 import pygame.color
-from pygame.locals import *
+from pygame.sprite import Sprite, RenderPlain
 
 import util
 import events
 from conf import *
 from locals import *
 
+SCROLL_EDGE=2
+NORTH=0
+EAST=1
+SOUTH=2
+WEST=3
+MOVE_VECTORS = ((0,-1),(1,0),(0,1),(-1,0))
 
 def add(a, b):
     return (a[0]+b[0], a[1]+b[1])
+
+class RenderEntity(RenderPlain):
+    """Simple RenderPlain subclass that allows you to use image maps"""
+    def draw(self, surface):
+        spritedict = self.spritedict
+        surface_blit = surface.blit
+        for s in spritedict.keys():
+            surface_blit(s.image, s.rect, s.image_tile)
+
+    def tile_collision(self,pos):
+        """True if any MapEntity in the group occupies the pos(x,y)"""
+        spritedict = self.spritedict
+        for s in spritedict.keys():
+            if s.pos == pos: return 1
+        return 0
+
+    def scroll(self, vector):
+        spritedict = self.spritedict
+        for s in spritedict.keys():
+            s.rect.move_ip(vector)
+    
+class MapEntity(Sprite):
+    """MapEntity is a sprite that knows how to interact with a map.
+       It contains code that can be run periodically, the default
+       is to do nothing.  There are also methods for each type of 
+       map event.  To do anything useful, subclass this"""
+           
+    def __init__(self,image,tile_x=0,tile_y=0,direction=NORTH):
+        """MapEntity(Surface, tile_x, tile_y, direction)
+       
+           Surface should be obtained from util.load_image
+
+           tile_x & tile_y specify what image map to use if you join
+           multiple images into one map (Characters, Entities, etc)
+           legal values are positive integers representing zero based index
+
+           direction is what direction the entity should face,
+           can also be set later with MapEntity.face(direction)
+           legal values are map.NORTH, map.EAST, map.SOUTH, & map.WEST"""
+
+        Sprite.__init__(self)
+        self.pos = (0,0)
+        self.map = None
+        self.image = image
+        self.image_base_x = tile_x * 4 * TILE_SIZE
+        self.image_base_y = tile_y * 4 * TILE_SIZE
+        self.frame = 0
+        self.image_tile = Rect( self.image_base_x, self.image_base_y,
+                                TILE_SIZE, TILE_SIZE )
+        self.rect = Rect(0,0,TILE_SIZE,TILE_SIZE)
+        self.face(direction)
+        self.next_frame()
+        self.velocity = (0,0)
+        self.speed = 5
+        self.moving = False # For tile based motion
+        self.always_animate = False
+        self.animation_count = 1
+        self.animation_speed = 5
+
+    def speed(self, pixels_per_update):
+        """speed(int) Set the movement speed, currently in pixels per update"""
+        self.speed = pixels_per_update
+
+    def face(self,direction):
+        self.direction = direction
+        self.image_tile.top = self.image_base_y + (direction * TILE_SIZE)
+
+    def next_frame(self):
+        self.frame = self.frame + 1
+        if self.frame > 3: self.frame = 0
+        self.image_tile.left = self.image_base_x + (self.frame * TILE_SIZE)
+
+    def move_to(self, pos):
+        x, y = pos
+        self.pos = pos
+        self.rect.top = (TILE_SIZE * y)
+        self.rect.left = (TILE_SIZE * x)
+#TODO interface with map to see where you're supposed to be on the screen
+
+    def move(self, direction, face_dir=True):
+        """Start moving if not already"""
+        if not self.moving:
+            target = add(self.pos, MOVE_VECTORS[direction])
+            if face_dir: self.face(direction)
+            if self.map.move_ok(target):
+                self.direction = MOVE_VECTORS[direction]
+                self.pos = target
+                self.moving = True
+                self.pixels_left_to_move = TILE_SIZE
+                self.velocity = (MOVE_VECTORS[direction][0] * self.speed, \
+                        MOVE_VECTORS[direction][1] * self.speed)
+
+    def update(self):
+        if self.moving:
+            self.pixels_left_to_move = self.pixels_left_to_move - self.speed
+            self.animation_count = self.animation_count + 1
+            if self.animation_count % self.animation_speed == 0:
+                self.animation_count = 1
+                self.next_frame()
+            self.rect.move_ip(self.velocity)
+            if self.pixels_left_to_move < self.speed:
+                # Move the remaining pixels
+                self.velocity = (self.direction[0] * self.pixels_left_to_move, \
+                                 self.direction[1] * self.pixels_left_to_move)
+                self.rect.move_ip(self.velocity)
+                # See if there is a listener on entry to this square
+                if self.map.entry_listeners.has_key( self.pos ):
+                    self.map.entry_listeners[self.pos]()
+                self.moving = False
+        else:
+            if self.always_animate:
+                self.animation_count = self.animation_count + 1
+                if self.animation_count % self.animation_speed == 0:
+                    self.animation_count = 1
+                    self.next_frame()
 
 class MapLocation(object):
     "One square on the overview map"
@@ -32,6 +154,7 @@ class MapLocation(object):
 
     def set_tile(self, tile):
         self.tile = tile
+        self.map.dirty()
 
     def loc(self):
         return self.loc
@@ -48,35 +171,44 @@ class MapLocation(object):
     def neighbor_west(self):
         return self.map.get( self.loc[0]-1, self.loc[1] )
 
-    def draw(self, screen, x_offset, y_offset):
-        x = x_offset + self.x_base
-        y = y_offset + self.y_base
-        screen.blit(self.tile, (x,y) )
-
 class MapBase:
     def __init__(self, width, height):
         self.tile_manager = TileManager()
         default_tile = self.tile_manager.get_tile('floor')
-        self.cols = []
+        self.tiles = []
         for x in range(width):
             col = []
-            self.cols.append(col)
+            self.tiles.append(col)
             for y in range(height):
                 location = MapLocation(self, (x,y), default_tile)
                 col.append(location)
-        self.x_offset = 0
-        self.y_offset = 0
         self.width = width
         self.height = height
-        self.char_min_x = int(SCREEN_SIZE[0] * TILE_SIZE * 0.3)
-        self.char_max_x = int(SCREEN_SIZE[0] * TILE_SIZE * 0.7)
-        self.char_min_y = int(SCREEN_SIZE[1] * TILE_SIZE * 0.3)
-        self.char_max_y = int(SCREEN_SIZE[1] * TILE_SIZE * 0.7)
         self.character = None
-        self.sprites = []
-        self.update()
+        self.entities = RenderEntity()
+        self.non_passable_entities = RenderEntity()
+        self.viewport = Rect(0,0,SCREEN_SIZE[0],SCREEN_SIZE[1])
+        self.offset = Rect(0,0,0,0)
+        self.map_tile_coverage = Rect(0,0,SCREEN_SIZE[0]+5,SCREEN_SIZE[1]+5)
+        if self.map_tile_coverage.width > width:
+            self.map_tile_coverage.width = width
+        if self.map_tile_coverage.height > height:
+            self.map_tile_coverage.height = height
+        self.map_non_scroll_region = \
+                    self.viewport.inflate(SCROLL_EDGE*-2,SCROLL_EDGE*-2)
         self.action_listeners = {}
         self.entry_listeners = {}
+        self.scrolling = False
+        self.frame = 0
+        self.map_frames_dirty = [True,True,True,True]
+        self.map_frames = []
+        for f in range(4):
+#TODO Add non hardcoded values for buffer
+#TODO Make sure we don't make a larger surface than we need
+#TODO   Ex: 5x5 map
+            self.map_frames.append(pygame.Surface(((3+width) * TILE_SIZE, \
+                    (3+height) * TILE_SIZE)))
+        self.update()
 
     def dispose(self):
         self.tile_manager.clear()
@@ -85,32 +217,28 @@ class MapBase:
     def get(self, x, y):
         if x<0 or y<0: return None
         try:
-            return self.cols[x][y]
+            return self.tiles[x][y]
         except:
             return None
     
-    def draw(self, screen):
-        screen.fill( pygame.color.Color('black'), screen.get_rect() )
-        for col in self.visible_cols():
-            for location in self.visible_rows(col):
-                location.draw(screen, self.x_offset, self.y_offset)
-        if self.character is not None:
-            self.character.draw(screen, self.char_x, self.char_y)
-        for sprite in self.sprites:
-            x, y = sprite.map_pos
-            x = x * TILE_SIZE + self.x_offset
-            y = y * TILE_SIZE + self.y_offset
-            sprite.draw(screen, x, y)
-
-    def visible_cols(self):
-        start_col = max(0, -self.x_offset / TILE_SIZE)
-        stop_col = start_col + SCREEN_SIZE[0] + 1
-        return self.cols[start_col:stop_col]
-
-    def visible_rows(self,col):
-        start_row = max(0, -self.y_offset / TILE_SIZE)
-        stop_row = start_row + SCREEN_SIZE[1] + 1
-        return col[start_row:stop_row]
+    def calculate_tile_coverage(self, viewable_region):
+        if self.character is None:
+            return
+#TODO Make sure there isn't more tile coverage than map on small maps
+        self.map_tile_coverage.center = self.character.pos
+        if self.map_tile_coverage.left < 0: self.map_tile_coverage.left = 0
+        if self.map_tile_coverage.right > self.width:
+            self.map_tile_coverage.right = self.width
+        if self.map_tile_coverage.top < 0: self.map_tile_coverage.top = 0
+        if self.map_tile_coverage.bottom > self.height:
+            self.map_tile_coverage.bottom = self.height
+        self.offset.left = \
+                (viewable_region.left - self.map_tile_coverage.left) * TILE_SIZE
+        self.offset.top = \
+                (viewable_region.top - self.map_tile_coverage.top) * TILE_SIZE
+        if not self.map_non_scroll_region.collidepoint(self.character.pos):
+            self.map_non_scroll_region = \
+                   self.viewport.inflate(SCROLL_EDGE*-2,SCROLL_EDGE*-2)
 
     def set_location(self, loc, tile_name, walkable=True):
         x, y = loc
@@ -119,18 +247,18 @@ class MapBase:
         location.set_tile(tile)
         location.set_walkable(walkable)
 
-    def place_character(self, character, character_pos):
+    def place_character(self, character, pos, passable=False, direction=NORTH):
         self.character = character
-        self.character_pos = character_pos
-        self.character_offset = (0,0)
-        self.character_direction = None
-        self.char_x = character_pos[0] * TILE_SIZE
-        self.char_y = character_pos[1] * TILE_SIZE
-        self.character.update()
+        character.map = self
+        self.place_entity(character, pos, passable, direction)
+        self.calculate_tile_coverage(self.viewport)
 
-    def place_sprite(self, sprite, sprite_pos):
-        sprite.map_pos = sprite_pos
-        self.sprites.append(sprite)
+    def place_entity(self, entity, entity_pos, passable=False, direction=NORTH):
+        entity.face(direction)
+        entity.move_to(entity_pos)
+        self.entities.add(entity)
+        if not passable:
+            self.non_passable_entities.add(entity)
 
     def add_entry_listener(self, x, y, listener):
         self.entry_listeners[ (x,y) ] = listener
@@ -140,45 +268,47 @@ class MapBase:
 
     def update(self):
         """Invoked once per cycle of the event loop, to allow animation to update"""
-        if self.character is not None:
-            if self.character_direction is not None:
-                velocity = (self.character_direction[0]*MOVE_SPEED, \
-                            self.character_direction[1]*MOVE_SPEED)
-                self.character_offset = add(self.character_offset, velocity)
-                x = abs( self.character_offset[0] + self.character_offset[1] )
-                if x >= TILE_SIZE:
-                    self.character_pos = add(self.character_pos,
-                                             self.character_direction)
-                    self.character_direction = None
-                    self.character_offset = (0,0)
+        self.entities.update()
+        if self.scrolling:
+            axis = self.scroll_axis
+            diff = [0,0]
+            diff[axis] = self.scroll_anchor - self.character.rect[axis]
+            self.entities.scroll(diff)
+            diff[axis] = diff[axis] * -1
+            self.offset[axis] = self.offset[axis] + diff[axis]
+            if not self.character.moving:
+                self.scrolling = False
+        if self.map_frames_dirty[self.frame]:
+            self.build_current_frame()
+            self.map_frames_dirty[self.frame] = False
 
-                    # See if there is a listener on entry to this square
-                    if self.entry_listeners.has_key( self.character_pos ):
-                        self.entry_listeners[self.character_pos]()
-                        
-                self.char_x = self.character_offset[0] 
-                self.char_x = self.char_x + TILE_SIZE*self.character_pos[0]
-                self.char_x = self.char_x + self.x_offset
-                self.char_y = self.character_offset[1] 
-                self.char_y = self.char_y + TILE_SIZE*self.character_pos[1]
-                self.char_y = self.char_y + self.y_offset
-                if self.char_x < self.char_min_x: 
-                    self.x_offset = self.x_offset - self.char_x + self.char_min_x
-                    self.char_x = self.char_min_x
-                if self.char_x > self.char_max_x:
-                    self.x_offset = self.x_offset - self.char_x + self.char_max_x
-                    self.char_x = self.char_max_x
-                if self.char_y < self.char_min_y:
-                    self.y_offset = self.y_offset - self.char_y + self.char_min_y
-                    self.char_y = self.char_min_y
-                if self.char_y > self.char_max_y:
-                    self.y_offset = self.y_offset - self.char_y + self.char_max_y
-                    self.char_y = self.char_max_y
-            self.character.update()
-            for sprite in self.sprites: sprite.update()
+    def draw(self, screen):
+#TODO Move the map
+        screen.fill(self.red)
+        screen.blit(self.map_frames[self.frame], (0,0), self.offset)
+        self.entities.draw(screen)
+        
+    def build_current_frame(self):
+#TODO Decide if map_tile_coverage is the right name for this
+        blit = self.map_frames[self.frame].blit
+        rect = (self.frame * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE)
+        x = 0
+        y = 0
+        for col in range(self.map_tile_coverage.left, \
+                         self.map_tile_coverage.right):
+            column = self.tiles[col]
+            for row in range(self.map_tile_coverage.top, \
+                             self.map_tile_coverage.bottom):
+                blit(column[row].tile, (x,y), rect)
+                y = y + TILE_SIZE
+            x = x + TILE_SIZE
+            y = 0
 
     def run(self, screen):
+        self.red = color.Color('red')
         self.screen = screen
+        self.offset.width = screen.get_rect().width
+        self.offset.height = screen.get_rect().height
 
         # The main event loop for rendering the map
         clock = pygame.time.Clock()
@@ -192,44 +322,55 @@ class MapBase:
                     self.dispose()
                     return
             
-            if event_bag.is_left(): self.move_character_left()
-            if event_bag.is_right(): self.move_character_right()
-            if event_bag.is_up(): self.move_character_up()
-            if event_bag.is_down(): self.move_character_down()
+            if event_bag.is_left(): self.move_character(WEST)
+            if event_bag.is_right(): self.move_character(EAST)
+            if event_bag.is_up(): self.move_character(NORTH)
+            if event_bag.is_down(): self.move_character(SOUTH)
             self.update()
             self.draw(screen)
             pygame.display.flip()
 
-    def move_character_left(self):
-        x,y = self.character_pos
-        target = (x-1, y)
-        if self.move_ok(target):
-            self.character_direction = (-1, 0)
+    def move_character(self, dir):
+        self.character.move(dir)
+        if not self.scrolling:
+            if self.character.moving:
+                x,y = self.character.pos
+                if dir % 2 == 0:
+                    y = self.character.pos[1]
+                    if y >= self.map_non_scroll_region.top and \
+                       y < self.map_non_scroll_region.bottom:
+                        return
+                    if y < SCROLL_EDGE or y > self.height - SCROLL_EDGE:
+                        return
+                    self.scroll_axis = 1
+                else:
+                    x = self.character.pos[0]
+                    if x >= self.map_non_scroll_region.left and \
+                       x < self.map_non_scroll_region.right:
+                        return
+                    if x < SCROLL_EDGE or x > self.width - SCROLL_EDGE:
+                        return
+                    self.scroll_axis = 0
+                self.scrolling = True
+                vector = MOVE_VECTORS[dir]
+                self.map_non_scroll_region.move_ip(vector)
+                old_viewport = self.viewport
+                self.viewport = old_viewport.move(vector)
+                self.scroll_anchor = self.character.rect[self.scroll_axis]
+                if not self.map_tile_coverage.contains(self.viewport):
+                    self.calculate_tile_coverage(old_viewport)
+                    self.dirty()
 
-    def move_character_right(self):
-        x,y = self.character_pos
-        target = (x+1, y)
-        if self.move_ok(target):
-            self.character_direction = (1, 0)
-
-    def move_character_up(self):
-        x,y = self.character_pos
-        target = (x, y-1)
-        if self.move_ok(target):
-            self.character_direction = (0, -1)
-
-    def move_character_down(self):
-        x,y = self.character_pos
-        target = (x, y+1)
-        if self.move_ok(target):
-            self.character_direction = (0, 1)
+    def dirty(self):
+        for f in range(4):
+            self.map_frames_dirty[f] = True
 
     def move_ok(self, target_pos):
         x, y = target_pos
         target = self.get(x,y)
         return target is not None \
                and target.is_walkable() \
-               and self.character_direction is None
+               and not self.non_passable_entities.tile_collision(target_pos)
 
 class TileManager(object):
     def __init__(self):
