@@ -101,6 +101,7 @@ class MapBase:
         self.character.update()
 
     def update(self):
+        """Invoked once per cycle of the event loop, to allow animation to update"""
         if self.character is not None:
             if self.character_direction is not None:
                 velocity = (self.character_direction[0]*MOVE_SPEED, \
