@@ -16,7 +16,8 @@ class fog_test(RPG):
         monsters.register_packs()
         self.init_character()
         self.save_data.map = StoneWall()
-        self.save_data.character = characters.Character('dude_map')
+        #self.save_data.character = characters.Character('dude_map')
+        self.save_data.character = characters.Character('stolen-01',2,0,-1)
         self.save_data.map.place_character(self.save_data.character, (4,4) )
         self.save_data.map.place_hero(self.save_data.hero)
 

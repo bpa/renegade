@@ -10,12 +10,13 @@ def main():
     opts['height'] = 352
     opts['width'] = 352
     opts['debug'] = 0
+    opts['fullscreen'] = False
     game = process_args(opts)
     games.run(game,opts)
 
 def process_args(opts):
     try:
-        optlist, args = getopt.getopt(sys.argv[1:], ":hd:g:",["help","debug=","geometry="])
+        optlist, args = getopt.getopt(sys.argv[1:], ":hd:g:f",["help","debug=","geometry=","fullscreen"])
     except getopt.GetoptError:
         print_usage_and_exit()
     for o, val in optlist:
@@ -27,6 +28,8 @@ def process_args(opts):
             dimensions = val.split("x")
             opts['width'] = int(dimensions[0])
             opts['height'] = int(dimensions[1])
+        if o in ("-f", "--fullscreen"):
+            opts['fullscreen'] = True
     if len(args) != 1:
         print_usage_and_exit()
     return args[0]

@@ -54,7 +54,7 @@ class MapEntity(Sprite):
        is to do nothing.  There are also methods for each type of 
        map event.  To do anything useful, subclass this"""
            
-    def __init__(self,image_map,tile_x=0,tile_y=0,direction=NORTH):
+    def __init__(self,image_map,tile_x=0,tile_y=0,color_key=None):
         """MapEntity(Surface, tile_x, tile_y, direction)
        
            Surface should be obtained from util.load_image
@@ -67,19 +67,18 @@ class MapEntity(Sprite):
            can also be set later with MapEntity.face(direction)
            legal values are map.NORTH, map.EAST, map.SOUTH, & map.WEST"""
 
-        image = util.load_image(CHARACTERS_DIR, image_map, True)
+        image = util.load_image(CHARACTERS_DIR, image_map, True, color_key)
         Sprite.__init__(self)
         self.pos = (0,0)
         self.map = None
         self.image = image
-        self.image_base_x = tile_x * 4 * TILE_SIZE
-        self.image_base_y = tile_y * 4 * TILE_SIZE
+        self.image_base_x = tile_x * 3 * TILE_SIZE
+        self.image_base_y = tile_y * 3 * TILE_SIZE
         self.frame = 0
         self.image_tile = Rect( self.image_base_x, self.image_base_y,
                                 TILE_SIZE, TILE_SIZE )
         self.rect = Rect(0,0,TILE_SIZE,TILE_SIZE)
-        self.facing = NORTH
-        self.face(direction)
+        self.face(NORTH)
         self.next_frame()
         self.velocity = (0,0)
         self.speed = 5
@@ -100,7 +99,7 @@ class MapEntity(Sprite):
 
     def next_frame(self):
         self.frame = self.frame + 1
-        if self.frame > 3: self.frame = 0
+        if self.frame > 2: self.frame = 0
         self.image_tile.left = self.image_base_x + (self.frame * TILE_SIZE)
 
     def move_to(self, pos):

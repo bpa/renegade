@@ -14,7 +14,10 @@ class Game:
         self.name = "Renegade game"
         self.save_data = SaveGameObject()
         pygame.init()
-        self.screen = pygame.display.set_mode((opts['width'], opts['height']))
+        dimensions = (opts['width'], opts['height'])
+        flags = 0
+        if opts['fullscreen']: flags = flags | FULLSCREEN
+        self.screen = pygame.display.set_mode(dimensions, flags)
 
     def load(self, game):
         self.save_data = pickle.load(open(os.path.join(SAVE_GAMES_DIR,game)))
