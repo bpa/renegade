@@ -3,7 +3,7 @@
 import pygame
 from pygame.locals import *
 import getopt, sys
-import conf
+import games
 
 def main():
     opts = {}
@@ -11,9 +11,6 @@ def main():
     opts['width'] = 352
     opts['debug'] = 0
     game = process_args(opts)
-
-    sys.path.append(conf.RENEGADE_BASE)
-    import games
     games.run(game,opts)
 
 def process_args(opts):
