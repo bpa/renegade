@@ -93,6 +93,8 @@ class MapEntity(Sprite):
         self.image_tile.left = self.image_base_x + (self.frame * TILE_SIZE)
 
     def move_to(self, pos):
+        """Moves the entity to a location without running triggers
+           or changing the direction its facing"""
         x, y = pos
         self.pos = pos
         self.rect.top = (TILE_SIZE * y)
@@ -100,7 +102,8 @@ class MapEntity(Sprite):
 #TODO interface with map to see where you're supposed to be on the screen
 
     def move(self, direction, face_dir=True):
-        """Start moving if not already"""
+        """move(direction, face_direction=True)
+           Start moving if not already"""
         if not self.moving:
             target = add(self.pos, MOVE_VECTORS[direction])
             if face_dir: self.face(direction)
@@ -283,7 +286,6 @@ class MapBase:
 
     def draw(self, screen):
 #TODO Move the map
-        screen.fill(self.red)
         screen.blit(self.map_frames[self.frame], (0,0), self.offset)
         self.entities.draw(screen)
         
@@ -304,7 +306,6 @@ class MapBase:
             y = 0
 
     def run(self, screen):
-        self.red = color.Color('red')
         self.screen = screen
         self.offset.width = screen.get_rect().width
         self.offset.height = screen.get_rect().height
@@ -345,7 +346,7 @@ class MapBase:
                     if y >= self.map_non_scroll_region.top and \
                        y < self.map_non_scroll_region.bottom:
                         return
-                    if y < SCROLL_EDGE or y > self.height - SCROLL_EDGE:
+                    if y < SCROLL_EDGE or y >= self.height - SCROLL_EDGE:
                         return
                     self.scroll_axis = 1
                 else:
@@ -353,7 +354,7 @@ class MapBase:
                     if x >= self.map_non_scroll_region.left and \
                        x < self.map_non_scroll_region.right:
                         return
-                    if x < SCROLL_EDGE or x > self.width - SCROLL_EDGE:
+                    if x < SCROLL_EDGE or x >= self.width - SCROLL_EDGE:
                         return
                     self.scroll_axis = 0
                 self.scrolling = True
