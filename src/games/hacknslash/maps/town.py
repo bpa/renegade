@@ -40,7 +40,7 @@ class AdventureTown(MapBase):
               "Any hints on getting started?",
               "This seems too simple, is that it?" ])
         
-        if choice == "What am I supposed to do here?":
+        if choice == 0:
             dialog.message("You're job is to destroy the evil Minotaur.  " +
                            "He lives in a cave north of town.  You'll find " +
                            "him on the 20th level.  Yeah, its a big cave.  " +
@@ -49,7 +49,7 @@ class AdventureTown(MapBase):
                            "No one knows why he'd want to keep digging like " +
                            "that, seems like it would be a pain to go up " +
                            "and down the stairs all the time to mess with us.")
-        elif choice == "How does fighting work?":
+        elif choice == 1:
             dialog.message("Its pretty simple really, you can hack, slash, " +
                            "or stab.  Each method has a different chance of " +
                            "hitting and does a different amount of damage.  " +
@@ -58,7 +58,7 @@ class AdventureTown(MapBase):
                            "a little harder to hit with, but does more " +
                            "damage.  Stab is the hardest to use, but does " +
                            "the most damage.  Now get out there and fight")
-        elif choice == "Any hints on getting started?":
+        elif choice == 2:
             dialog.message("Starting out is always the hardest part.  You " +
                            "have nothing but a little money.  At least its " +
                            "not zilch.  There are two basic strategies for " +
@@ -81,7 +81,7 @@ class AdventureTown(MapBase):
                            "with no challenge!  You won't get anywhere here " +
                            "unless you take risks.  The deeper you go into " +
                            "the cave, the more money and experience you get.")
-        elif choice == "This seems too simple, is that it?":
+        elif choice == 3:
             dialog.message("Ummm... That really is about it.  Oh yeah, if " +
                            "you do manage to get rid of the evil Minotaur, " +
                            "we'll make you mayor and all the girls will " +
