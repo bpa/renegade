@@ -95,7 +95,10 @@ class Dialog(object):
         self.rect.center = screen.get_rect().center
 
         # Save off a copy of the screen that I'm about to overwrite
-        screen_copy = screen.copy()
+        #screen_copy = screen.copy()
+        #copy doesn't appear to exist on FreeBSD or Windows
+        screen_copy = pygame.Surface(screen.get_size())
+        screen_copy.blit(screen,(0,0))
     
         clock = pygame.time.Clock()
         event_bag = events.EventUtil()

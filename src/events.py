@@ -60,7 +60,9 @@ class EventUtil:
                     self.down = 0
                     self.up = -1
                     yield pygame.event.Event(PUSH_ARROW_EVENT)
-                elif event.key == K_LCTRL:
+                elif event.key == K_LCTRL or \
+                     event.key == K_RETURN or \
+                     event.key == K_KP_ENTER:
                     self.action = 0
                     yield pygame.event.Event(PUSH_ACTION_EVENT)
             elif event.type == KEYUP:
@@ -72,7 +74,9 @@ class EventUtil:
                     self.up = -1
                 elif event.key == K_DOWN:
                     self.down = -1
-                elif event.key == K_LCTRL:
+                elif event.key == K_LCTRL or \
+                     event.key == K_RETURN or \
+                     event.key == K_KP_ENTER:
                     self.action = -1
 
         elapsed = self.clock.tick()

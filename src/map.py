@@ -77,6 +77,7 @@ class MapEntity(Sprite):
         self.always_animate = False
         self.animation_count = 1
         self.animation_speed = 5
+        self.entered_tile = False
 
     def speed(self, pixels_per_update):
         """speed(int) Set the movement speed, currently in pixels per update"""
@@ -124,9 +125,7 @@ class MapEntity(Sprite):
                 self.velocity = (self.direction[0] * self.pixels_left_to_move, \
                                  self.direction[1] * self.pixels_left_to_move)
                 self.rect.move_ip(self.velocity)
-                # See if there is a listener on entry to this square
-                if self.map.entry_listeners.has_key( self.pos ):
-                    self.map.entry_listeners[self.pos]()
+                self.entered_tile = True
                 self.moving = False
         else:
             if self.always_animate:
@@ -329,6 +328,12 @@ class MapBase:
             self.update()
             self.draw(screen)
             pygame.display.flip()
+            #I wish there was a better place for this code, but I can't think of any
+            if self.character is not None and self.character.entered_tile:
+                self.character.entered_tile = False
+                # See if there is a listener on entry to this square
+                if self.entry_listeners.has_key( self.character.pos ):
+                    self.entry_listeners[self.character.pos]()
 
     def move_character(self, dir):
         self.character.move(dir)
