@@ -8,7 +8,15 @@ class Cave(MapBase):
             ' ': 'stone', '.': 'floor', '+': 'cave','@': 'grass',
             '0': 'dirt',
             'walkable': '.+@0' })
+        self.add_entry_listener(5,9, self.exit_cave)
+        self.add_entry_listener(5,41, self.win_game)
            
+    def exit_cave(self):
+        core.game.teleport(None, (8,1), None, 'overworld.Overworld')
+        
+    def win_game(self):
+        print "You have defeated the evil Minotaur and won!"
+
     def random_fight(self):
         monster = combat.gallery.generate_monster(1)
         combat.Combat(self.hero, monster, pygame.display.get_surface())

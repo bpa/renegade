@@ -6,7 +6,7 @@ import pygame.image
 import pygame.color
 from pygame.sprite import Sprite, RenderPlain
 
-import util
+import util, core
 import events
 from conf import *
 from locals import *
@@ -207,6 +207,7 @@ class MapLocation(object):
 
 class MapBase:
     def __init__(self, width, height):
+        self.running = True
         self.tile_manager = TileManager()
         default_tile = self.tile_manager.get_tile('floor')
         self.tiles = []
@@ -252,7 +253,6 @@ class MapBase:
 
     def dispose(self):
         self.tile_manager.clear()
-        self.screen = None
     
     def set_regen_rate(self, rate):
         self.regen_rate = rate
@@ -297,9 +297,6 @@ class MapBase:
         self.place_entity(character, pos, passable, direction)
         self.calculate_tile_coverage(self.viewport)
 
-    def place_hero(self, hero):
-        self.hero = hero
-
     def place_entity(self, entity, entity_pos, passable=False, direction=NORTH):
         entity.face(direction)
         entity.map = self
@@ -310,9 +307,6 @@ class MapBase:
 
     def add_entry_listener(self, x, y, listener):
         self.entry_listeners[ (x,y) ] = listener
-
-    def get_screen(self):
-        return self.screen
 
     def update(self):
         """Invoked once per cycle of the event loop, to allow animation to update"""
@@ -330,24 +324,24 @@ class MapBase:
             self.build_current_frame()
             self.map_frames_dirty[self.frame] = False
 
-    def draw(self, screen):
-        screen.blit(self.map_frames[self.frame], (0,0), self.offset)
-        self.entities.draw(screen)
+    def draw(self):
+        core.screen.blit(self.map_frames[self.frame], (0,0), self.offset)
+        self.entities.draw(core.screen)
         if self.show_hud:
-            self.draw_hud(screen)
+            self.draw_hud()
 
-    def draw_hud(self, screen):
-        hero = self.hero
+    def draw_hud(self):
+        hero = core.game.save_data.hero
         text = "HP: %d/%d  Exp: %d  Level: %d" % \
                 (hero.get_hp(), hero.get_max_hp(), hero.get_exp(), hero.get_level())
-        self.draw_hud_text(text, 2, screen)
+        self.draw_hud_text(text, 2)
         text = "Weapon: %s  Armor: %s" % (hero.weapon.get_name(), hero.armor.get_name())
-        self.draw_hud_text(text, 1, screen)
+        self.draw_hud_text(text, 1)
 
-    def draw_hud_text(self, text, row, screen):
+    def draw_hud_text(self, text, row):
         rendered = self.hud_font.render(text, True, self.hud_color).convert_alpha()
-        base = screen.get_rect().height
-        screen.blit(rendered, (0, base - row*self.hud_font.get_height()))
+        base = core.screen.get_rect().height
+        core.screen.blit(rendered, (0, base - row*self.hud_font.get_height()))
         
     def build_current_frame(self):
 #TODO Decide if map_tile_coverage is the right name for this
@@ -365,21 +359,21 @@ class MapBase:
             x = x + TILE_SIZE
             y = 0
 
-    def run(self, screen):
-        self.screen = screen
-        self.offset.width = screen.get_rect().width
-        self.offset.height = screen.get_rect().height
+    def run(self):
+        self.offset.width = core.screen.get_rect().width
+        self.offset.height = core.screen.get_rect().height
 
         self.entities.run_command('enter_map')
         # The main event loop for rendering the map
         clock = pygame.time.Clock()
         event_bag = events.EventUtil()
         iteration = 1
-        while True:
+        while self.running:
             clock.tick(20)
         
             for event in event_bag.process_sdl_events():
                 if event.type == QUIT_EVENT:
+                    core.game.running = False
                     self.dispose()
                     return
             
@@ -389,7 +383,7 @@ class MapBase:
             if event_bag.is_down(): self.move_character(SOUTH)
             if event_bag.is_action(): self.character_activate()
             self.update()
-            self.draw(screen)
+            self.draw()
             pygame.display.flip()
             #I wish there was a better place for this code, but I can't think of any
             if self.character is not None and self.character.entered_tile:
@@ -398,11 +392,13 @@ class MapBase:
                 # See if there is a listener on entry to this square
                 if self.entry_listeners.has_key( self.character.pos ):
                     self.entry_listeners[self.character.pos]()
+        self.dispose()
+        return
 
     def check_heal(self):
         self.heal_points = self.heal_points + 1
         if self.heal_points >= self.regen_rate:
-            self.hero.regenerate()
+            core.game.save_data.hero.regenerate()
             self.heal_points = 0
 
     def character_activate(self):

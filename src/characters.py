@@ -5,8 +5,7 @@ from conf import *
 from map import MapEntity
 
 class Hero(object):
-    def __init__(self, screen):
-        self.screen = screen
+    def __init__(self):
         self.inventory = []
         self.strength = 10
         self.agility = 10

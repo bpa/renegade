@@ -3,6 +3,7 @@ from conf import *
 import pygame
 import pygame.image
 from pygame.locals import *
+import core
 
 class SaveGameObject:
     def __init__(self):
@@ -18,6 +19,18 @@ class Game:
         flags = 0
         if opts['fullscreen']: flags = flags | FULLSCREEN
         self.screen = pygame.display.set_mode(dimensions, flags)
+        core.screen = self.screen
+        self.new_game(opts)
+
+    def load_map(self,map_name):
+        """Loads a map by name.  This should always have a module.
+             game.load_map('module.map') => None
+             Sets game.save_data.map to specified map
+             Assumes there are no submodules"""
+        (map_module, map_class) = map_name.split('.')
+        map_module = self.__module__ + ".maps." + map_module
+        module = __import__(map_module, '', '', map_class)
+        exec "self.save_data.map = module.%s()" % map_class
 
     def load(self, game):
         self.save_data = pickle.load(open(os.path.join(SAVE_GAMES_DIR,game)))
@@ -34,6 +47,26 @@ class Game:
             exit
 
         print "Running map..."
-        ret = self.save_data.map.run(self.screen)
-        print "Map completed with return value: ", ret
+        self.running = True
+        while self.running:
+            ret = self.save_data.map.run()
+            print "Map completed with return value: ", ret
 
+    def teleport(self, effect, loc, dir=None, map_name=None):
+        """Teleports the character to a new location using an optional
+           effect.  If a map is specified, the current map will be changed,
+           if not, the character will just be moved to the location on the
+           current map"""
+        if dir is None:
+            dir = self.save_data.map.character.facing
+        if effect is not None:
+            pass
+        if map_name is not None:
+            dude = self.save_data.map.character
+            self.save_data.map.running = False
+            self.load_map(map_name)
+        self.save_data.map.place_character(dude, loc, False, dir )
+        self.save_data.map.update()
+        self.save_data.map.draw()
+        if effect is not None:
+            pass

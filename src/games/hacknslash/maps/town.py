@@ -1,6 +1,7 @@
 from map import *
 from characters import Character
 import dialog, NPC
+import core
 
 class AdventureTown(MapBase):
     def __init__(self):
@@ -34,12 +35,12 @@ class AdventureTown(MapBase):
     def walk_in_front_of_dude(self):
         choice = dialog.question(
             "I am the wise dude.  What is it you would like to know?",
-            [ "What is it exactly I'm supposed to do here anyway?",
-              "How does fighting work here?",
+            [ "What am I supposed to do here?",
+              "How does fighting work?",
               "Any hints on getting started?",
               "This seems too simple, is that it?" ])
         
-        if choice == "What is it exactly I'm supposed to do here anyway?":
+        if choice == "What am I supposed to do here?":
             dialog.message("You're job is to destroy the evil Minotaur.  " +
                            "He lives in a cave north of town.  You'll find " +
                            "him on the 20th level.  Yeah, its a big cave.  " +
@@ -48,7 +49,7 @@ class AdventureTown(MapBase):
                            "No one knows why he'd want to keep digging like " +
                            "that, seems like it would be a pain to go up " +
                            "and down the stairs all the time to mess with us.")
-        elif choice == "How does fighting work here?":
+        elif choice == "How does fighting work?":
             dialog.message("Its pretty simple really, you can hack, slash, " +
                            "or stab.  Each method has a different chance of " +
                            "hitting and does a different amount of damage.  " +
@@ -91,7 +92,7 @@ class AdventureTown(MapBase):
                            "provided for you.  All in all, not a bad gig.")
     
     def leave_town(self):
-        pass
+        core.game.teleport(None, (8,4), None, 'overworld.Overworld')
 
     def random_fight(self):
         monster = combat.gallery.generate_monster(1)

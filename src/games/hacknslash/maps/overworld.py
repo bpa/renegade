@@ -1,5 +1,6 @@
 from map import *
 from characters import Character
+import core
 
 class Overworld(MapBase):
     def __init__(self):
@@ -13,6 +14,8 @@ class Overworld(MapBase):
             '_': 'dirt',
             'O': 'cave',
             'walkable': 'xi_O'})
+        self.add_entry_listener(8,4, self.enter_town)
+        self.add_entry_listener(8,1, self.enter_cave)
         
     def __ascii_art(self):
         return(
@@ -27,3 +30,15 @@ class Overworld(MapBase):
             "iiiiiiiiii ",
             "iiiiiiiiii ",
             "iiiiiiiiii ")
+
+    def enter_town(self):
+        if self.character.facing == SOUTH:
+            self.character.face(WEST)
+        if self.character.facing == WEST:
+            core.game.teleport(None, (10,8), None, 'town.AdventureTown')
+        else:
+            core.game.teleport(None, ( 0,8), None, 'town.AdventureTown')
+
+    def enter_cave(self):
+        core.game.teleport(None, (5,9), None, 'cave.Cave')
+
