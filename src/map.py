@@ -57,13 +57,13 @@ class MapBase:
     def __init__(self, width, height):
         self.tile_manager = TileManager()
         default_tile = self.tile_manager.get_tile('floor')
-        self.rows = []
+        self.cols = []
         for x in range(width):
-            row = []
-            self.rows.append(row)
+            col = []
+            self.cols.append(col)
             for y in range(height):
                 location = MapLocation(self, (x,y), default_tile)
-                row.append(location)
+                col.append(location)
         self.x_offset = 0
         self.y_offset = 0
         self.width = width
@@ -80,27 +80,27 @@ class MapBase:
 
     def get(self, x, y):
         try:
-            return self.rows[x][y]
+            return self.cols[x][y]
         except:
             return None
     
     def draw(self, screen):
         screen.fill( pygame.color.Color('black'), screen.get_rect() )
-        for row in self.visible_rows():
-            for location in self.visible_cols(row):
+        for col in self.visible_cols():
+            for location in self.visible_rows(col):
                 location.draw(screen, self.x_offset, self.y_offset)
         if self.character is not None:
             self.character.draw(screen, self.char_x, self.char_y)
 
-    def visible_rows(self):
-        start_row = max(0, -self.x_offset / TILE_SIZE)
-        stop_row = start_row + SCREEN_SIZE[0] + 1
-        return self.rows[start_row:stop_row]
+    def visible_cols(self):
+        start_col = max(0, -self.x_offset / TILE_SIZE)
+        stop_col = start_col + SCREEN_SIZE[0] + 1
+        return self.cols[start_col:stop_col]
 
-    def visible_cols(self,row):
-        start_col = max(0, -self.y_offset / TILE_SIZE)
-        stop_col = start_col + SCREEN_SIZE[1] + 1
-        return row[start_col:stop_col]
+    def visible_rows(self,col):
+        start_row = max(0, -self.y_offset / TILE_SIZE)
+        stop_row = start_row + SCREEN_SIZE[1] + 1
+        return col[start_row:stop_row]
 
     def set_location(self, loc, tile_name, walkable=True):
         x, y = loc
