@@ -30,6 +30,12 @@ def test_main_loop():
     character = characters.Character( ('dude1', 'dude2', 'dude3', 'dude4') )
     current_map.place_character( character, (4,4) )
 
+    # Handle holding the keys down
+    left = False
+    right = False
+    up = False
+    down = False
+
     # Start a main event loop for testing
     clock = pygame.time.Clock()
     while True:
@@ -42,14 +48,31 @@ def test_main_loop():
                 if event.key == K_ESCAPE:
                     return
                 elif event.key == K_LEFT:
-                    current_map.move_character_left()
+                    left = True
+                    right = False
                 elif event.key == K_RIGHT:
-                    current_map.move_character_right()
+                    right = True
+                    left = False
                 elif event.key == K_UP:
-                    current_map.move_character_up()
+                    up = True
+                    down = False
                 elif event.key == K_DOWN:
-                    current_map.move_character_down()
+                    down = True
+                    up = False
+            elif event.type == KEYUP:
+                if event.key == K_LEFT:
+                    left = False
+                elif event.key == K_RIGHT:
+                    right = False
+                elif event.key == K_UP:
+                    up = False
+                elif event.key == K_DOWN:
+                    down = False
         
+        if left: current_map.move_character_left()
+        if right: current_map.move_character_right()
+        if up: current_map.move_character_up()
+        if down: current_map.move_character_down()
         current_map.update()
         current_map.draw(screen)        
         pygame.display.flip()

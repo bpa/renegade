@@ -48,7 +48,7 @@ class MapLocation(object):
         x = x_offset + self.x_base
         y = y_offset + self.y_base
         screen.blit(self.tile, (x,y) )
-        
+
 class MapBase:
     def __init__(self, width, height):
         self.tile_manager = TileManager()
@@ -64,6 +64,12 @@ class MapBase:
         self.y_offset = 0
         self.width = width
         self.height = height
+        self.char_min_x = int(SCREEN_SIZE[0] * TILE_SIZE * 0.3)
+        self.char_max_x = int(SCREEN_SIZE[0] * TILE_SIZE * 0.7)
+        self.char_min_y = int(SCREEN_SIZE[1] * TILE_SIZE * 0.3)
+        self.char_max_y = int(SCREEN_SIZE[1] * TILE_SIZE * 0.7)
+        self.character = None
+        self.update()
 
     def get(self, x, y):
         try:
@@ -76,9 +82,7 @@ class MapBase:
             for location in row:
                 location.draw(screen, self.x_offset, self.y_offset)
         if self.character is not None:
-            x = self.character_offset[0] + TILE_SIZE*self.character_pos[0]
-            y = self.character_offset[1] + TILE_SIZE*self.character_pos[1]
-            self.character.draw(screen, x, y)
+            self.character.draw(screen, self.char_x, self.char_y)
 
     def set_location(self, loc, tile_name, walkable=True):
         x, y = loc
@@ -91,52 +95,74 @@ class MapBase:
         self.character = character
         self.character_pos = character_pos
         self.character_offset = (0,0)
-        self.character_velocity = None
+        self.character_direction = None
+        self.char_x = character_pos[0] * TILE_SIZE
+        self.char_y = character_pos[1] * TILE_SIZE
+        self.character.update()
 
     def update(self):
         if self.character is not None:
-            if self.character_velocity is not None:
-                self.character_offset = add(self.character_offset, 
-                                            self.character_velocity)
+            if self.character_direction is not None:
+                velocity = (self.character_direction[0]*MOVE_SPEED, \
+                            self.character_direction[1]*MOVE_SPEED)
+                self.character_offset = add(self.character_offset, velocity)
                 x = abs( self.character_offset[0] + self.character_offset[1] )
                 if x >= TILE_SIZE:
                     self.character_pos = add(self.character_pos,
-                                             self.character_velocity)
+                                             self.character_direction)
                     # TODO: Emit some kind of move_complete event
-                    self.character_velocity = None
+                    self.character_direction = None
                     self.character_offset = (0,0)
+                self.char_x = self.character_offset[0] 
+                self.char_x = self.char_x + TILE_SIZE*self.character_pos[0]
+                self.char_x = self.char_x + self.x_offset
+                self.char_y = self.character_offset[1] 
+                self.char_y = self.char_y + TILE_SIZE*self.character_pos[1]
+                self.char_y = self.char_y + self.y_offset
+                if self.char_x < self.char_min_x: 
+                    self.x_offset = self.x_offset - self.char_x + self.char_min_x
+                    self.char_x = self.char_min_x
+                if self.char_x > self.char_max_x:
+                    self.x_offset = self.x_offset - self.char_x + self.char_max_x
+                    self.char_x = self.char_max_x
+                if self.char_y < self.char_min_y:
+                    self.y_offset = self.y_offset - self.char_y + self.char_min_y
+                    self.char_y = self.char_min_y
+                if self.char_y > self.char_max_y:
+                    self.y_offset = self.y_offset - self.char_y + self.char_max_y
+                    self.char_y = self.char_max_y
             self.character.update()
 
     def move_character_left(self):
         x,y = self.character_pos
         target = (x-1, y)
         if self.move_ok(target):
-            self.character_velocity = (-1, 0)
+            self.character_direction = (-1, 0)
 
     def move_character_right(self):
         x,y = self.character_pos
         target = (x+1, y)
         if self.move_ok(target):
-            self.character_velocity = (1, 0)
+            self.character_direction = (1, 0)
 
     def move_character_up(self):
         x,y = self.character_pos
         target = (x, y-1)
         if self.move_ok(target):
-            self.character_velocity = (0, -1)
+            self.character_direction = (0, -1)
 
     def move_character_down(self):
         x,y = self.character_pos
         target = (x, y+1)
         if self.move_ok(target):
-            self.character_velocity = (0, 1)
+            self.character_direction = (0, 1)
 
     def move_ok(self, target_pos):
         x, y = target_pos
         target = self.get(x,y)
         return target is not None \
                and target.is_walkable() \
-               and self.character_velocity is None
+               and self.character_direction is None
 
 class TileManager(object):
     def __init__(self):
