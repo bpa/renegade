@@ -1,8 +1,8 @@
 from game import *
 
-class RPG(game):
+class RPG(Game):
     def __init__(self,opts):
-        game.__init__(self,opts)
+        Game.__init__(self,opts)
 
     def teleport(self, new_map, new_x, new_y, effect):
         self.save_data.map = new_map

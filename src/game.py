@@ -4,15 +4,15 @@ import pygame
 import pygame.image
 from pygame.locals import *
 
-class save_game_object:
+class SaveGameObject:
     def __init__(self):
         pass
 
-class game:
+class Game:
     def __init__(self, opts):
         self.opts = opts
         self.name = "Renegade game"
-        self.save_data = save_game_object()
+        self.save_data = SaveGameObject()
         pygame.init()
         self.screen = pygame.display.set_mode((opts['width'], opts['height']))
 
@@ -34,14 +34,3 @@ class game:
         ret = self.save_data.map.run(self.screen)
         print "Map completed with return value: ", ret
 
-    def up_event(self):
-        self.save_data.map.move_character_up()
-
-    def down_event(self):
-        self.save_data.map.move_character_down()
-
-    def left_event(self):
-        self.save_data.map.move_character_left()
-
-    def right_event(self):
-        self.save_data.map.move_character_right()
