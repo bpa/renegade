@@ -19,14 +19,18 @@ class Hero(object):
         self.recalculate()
         self.heal()
 
-    def inventory(self):
+    def get_inventory(self):
         return self.inventory
 
     def equip_weapon(self, weapon):
+        if self.weapon != None:
+            self.inventory.append(self.weapon)
         self.weapon = weapon
         self.recalculate()
 
     def equip_armor(self, armor):
+        if self.armor != None:
+            self.inventory.append(self.armor)
         self.armor = armor
         self.recalculate()
 
@@ -58,6 +62,12 @@ class Hero(object):
 
     def get_initiative(self):
         return dice.roll('1d20') + self.agility
+
+    def get_gold(self):
+        return self.gold
+
+    def add_gold(self, amount):
+        self.gold = self.gold + amount
 
     def damage(self, points):
         self.hp = self.hp - points
@@ -94,25 +104,32 @@ class Hero(object):
         dialog.message(text % (self.level, message, new_val))
         self.recalculate()
 
-class Weapon(object):
+class Item(object):
     def __init__(self):
+        self.name = 'UNNAMED ITEM'
+        self.value = 0
+
+    def get_name(self):
+        return self.name
+
+    def get_value(self):
+        return self.value
+
+class Weapon(Item):
+    def __init__(self):
+        Item.__init__(self)
         self.damage = '1d1'
 
     def get_damage(self):
         return dice.roll(self.damage)
     
-    def get_name(self):
-        return self.name
-
-class Armor(object):
+class Armor(Item):
     def __init__(self):
+        Item.__init__(self)
         self.rating = 0
 
     def get_rating(self):
         return self.rating
-
-    def get_name(self):
-        return self.name
 
 class Character(MapEntity):
     pass

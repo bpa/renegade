@@ -1,6 +1,27 @@
 from map import *
 from characters import Character
-import combat, dialog, NPC, core
+import combat, dialog, NPC, games.fog_test.items
+import core
+from games.fog_test.items import *
+import game
+
+class ArmorMerchant(NPC.Merchant):
+    def __init__(self, sprite_name):
+        NPC.Merchant.__init__(self, sprite_name)
+        self.set_intro("Welcome to Ye Olde Armor Shoppe!  How may I be of service?")
+        self.set_item_list( (ToughShirt(), DiamondPlate()) )
+
+    def purchased(self, armor):
+        game.save_data.hero.equip_armor( armor )
+
+class WeaponMerchant(NPC.Merchant):
+    def __init__(self, sprite_name):
+        NPC.Merchant.__init__(self, sprite_name)
+        self.set_intro("Avast ye swarthies!  Tis time to be buyin a weapon now, is it?")
+        self.set_item_list( (Dagger(), Dirk(), LightSaber()) )
+
+    def purchased(self, weapon):
+        game.save_data.hero.equip_weapon( weapon )
 
 class StoneWall(MapBase):
     def __init__(self):
@@ -24,6 +45,20 @@ class StoneWall(MapBase):
         self.add_entry_listener(8,2, self.walk_in_front_of_dude)
         self.add_entry_listener(8,3, self.random_fight)
 
+        # Place the armor merchant
+        armor_dude = ArmorMerchant('dude_map')
+        self.place_entity( armor_dude, (12,4) )
+        armor_dude.face(WEST)
+        armor_dude.always_animate = True
+        armor_dude.animation_speed = 4
+
+        # Place the weapon merchant
+        weapon_dude = WeaponMerchant('dude_map')
+        self.place_entity( weapon_dude, (12,6) )
+        weapon_dude.face(WEST)
+        weapon_dude.always_animate = True
+        weapon_dude.animation_speed = 5
+
         tp = NPC.Townsperson('dude_map')
         self.place_entity(tp, (7,7) )
         tp.animation_speed = 5
@@ -46,13 +81,13 @@ class StoneWall(MapBase):
              "I can't decide",
              "Who knows?" ])
         
-        if choice == "No, make it stop!":
+        if choice == 0:
             dialog.message("No! Stopping is not an option!")
-        elif choice == "Yes, Continue!":
+        elif choice == 1:
             dialog.message("Good, I appreciate your patience.")
-        elif choice == "I can't decide":
+        elif choice == 2:
             dialog.message("Well, hurry and make up your mind!")
-        elif choice == "Who knows?":
+        elif choice == 3:
             dialog.message("Ummm.. you're supposed to know that.")
     
     def random_fight(self):

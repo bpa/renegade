@@ -13,6 +13,7 @@ class EventUtil:
         self.up = -1
         self.down = -1
         self.action = -1
+        self.action2 = -1
         self.clock = Clock()
 
     def is_left(self):
@@ -33,6 +34,9 @@ class EventUtil:
             self.action = -1
             return 1
         return 0
+
+    def is_action2(self):
+        return self.action2>=0
 
     def process_sdl_events(self):
         """A generator to process raw SDL events into logical events,
@@ -66,9 +70,16 @@ class EventUtil:
                     yield pygame.event.Event(PUSH_ARROW_EVENT)
                 elif event.key == K_LCTRL or \
                      event.key == K_RETURN or \
+                     event.key == K_SPACE or \
                      event.key == K_KP_ENTER:
                     self.action = 0
                     yield pygame.event.Event(PUSH_ACTION_EVENT)
+                elif event.key == K_LSHIFT or \
+                     event.key == K_RSHIFT or \
+                     event.key == K_m:
+                    self.action2 = 0
+                    yield pygame.event.Event(PUSH_ACTION2_EVENT)
+
             elif event.type == KEYUP:
                 if event.key == K_LEFT:
                     self.left = -1
@@ -80,8 +91,13 @@ class EventUtil:
                     self.down = -1
                 elif event.key == K_LCTRL or \
                      event.key == K_RETURN or \
+                     event.key == K_SPACE or \
                      event.key == K_KP_ENTER:
                     self.action = -1
+                elif event.key == K_LSHIFT or \
+                     event.key == K_RSHIFT or \
+                     event.key == K_c:
+                    self.action2 = -1
 
         elapsed = self.clock.tick()
         if self.is_left():
@@ -109,4 +125,9 @@ class EventUtil:
             if self.action > REPEAT_DELAY:
                 self.action = 0
                 yield pygame.event.Event(REPEAT_ACTION_EVENT)
+        if self.is_action2():
+            self.action2 = self.action2 + elapsed
+            if self.action2 > REPEAT_DELAY:
+                self.action2 = 0
+                yield pygame.event.Event(REPEAT_ACTION2_EVENT)
             

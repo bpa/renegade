@@ -1,13 +1,17 @@
 import os
-from util import load_image
-from conf import *
 import pygame
 import pygame.image
 import pygame.color
 from pygame.sprite import Sprite, RenderPlain
+import pygame.mixer
 
-import util, core
+from util import load_image
+from conf import *
+import util
+import util
+import core
 import events
+import menu
 from conf import *
 from locals import *
 
@@ -206,10 +210,10 @@ class MapLocation(object):
         return self.map.get( self.loc[0]-1, self.loc[1] )
 
 class MapBase:
-    def __init__(self, width, height):
+    def __init__(self, width, height, default_tile_name='floor'):
         self.running = True
         self.tile_manager = TileManager()
-        default_tile = self.tile_manager.get_tile('floor')
+        default_tile = self.tile_manager.get_tile(default_tile_name)
         self.tiles = []
         for x in range(width):
             col = []
@@ -243,6 +247,7 @@ class MapBase:
         self.hud_rows = 2
         self.heal_points = 0
         self.regen_rate = 2000000000
+        self.sound = pygame.mixer.Sound('%s/sounds/beep.wav' % DATA_DIR)
         for f in range(4):
 #TODO Add non hardcoded values for buffer
 #TODO Make sure we don't make a larger surface than we need
@@ -335,7 +340,8 @@ class MapBase:
         text = "HP: %d/%d  Exp: %d  Level: %d" % \
                 (hero.get_hp(), hero.get_max_hp(), hero.get_exp(), hero.get_level())
         self.draw_hud_text(text, 2)
-        text = "Weapon: %s  Armor: %s" % (hero.weapon.get_name(), hero.armor.get_name())
+        text = "Gold: %d  Weapon: %s  Armor: %s" % \
+            (hero.get_gold(), hero.weapon.get_name(), hero.armor.get_name())
         self.draw_hud_text(text, 1)
 
     def draw_hud_text(self, text, row):
@@ -376,6 +382,8 @@ class MapBase:
                     core.game.running = False
                     self.dispose()
                     return
+                elif event.type == PUSH_ACTION2_EVENT:
+                    menu.run_main_menu()
             
             if event_bag.is_left(): self.move_character(WEST)
             if event_bag.is_right(): self.move_character(EAST)
@@ -456,6 +464,7 @@ class MapBase:
                         if e.can_trigger_actions: character.touch()
                 return 0
             else:
+                #self.sound.play()
                 return 1
         else:
             return 0

@@ -14,6 +14,7 @@ class Snotling(Monster):
         self.ac = 10
         self.agility = 14
         self.exp_value = 2
+        self.gold = '1d6'
 
 class LargeSlug(Monster):
     def __init__(self):
@@ -24,4 +25,5 @@ class LargeSlug(Monster):
         self.ac = 12
         self.agility = 10
         self.exp_value = 3
+        self.gold = '2d4'
 

@@ -1,5 +1,67 @@
 from map import *
 import dialog, random
+import game
+
+class Merchant(MapEntity):
+    def __init__(self,image,tile_x=0,tile_y=0,direction=NORTH):
+        MapEntity.__init__(self,image,tile_x,tile_y,direction)
+        self.intro = 'INTRO'
+        self.item_list = []
+        self.item_names = []
+        self.sell_factor = 0.6
+
+    def set_intro(self, text):
+        self.intro = text
+
+    def set_item_list(self, list):
+        self.item_list = list
+        self.item_names = map(self.item_text, list)
+        self.item_names.append('Never mind')
+
+    def set_sell_factor(self, sell_factor):
+        self.sell_factor = sell_factor
+
+    def activate(self):
+        action = dialog.question(self.intro,
+            ('I have an item to sell', 'I would like to make a purchase', 'Never mind'))
+        if action == 0:
+            self.do_sell()
+        elif action == 1:
+            choice = dialog.question('Select the item your heart desires:', self.item_names)
+            if choice >= len(self.item_names)-1:
+                dialog.message("Come back when you are ready to order!")
+                return
+            item = self.item_list[choice]
+            hero = game.save_data.hero
+            if item.value <= hero.get_gold():
+                hero.add_gold( -item.get_value() )
+                self.purchased(item)
+            else:
+                dialog.message('Come back when you have accumulated enough gold!')
+
+    def do_sell(self):
+        all_items = game.save_data.hero.get_inventory()[:]
+        items = filter(lambda x: x.get_value()>0, all_items)
+        item_names = map(self.sell_text, items)
+        item_names.append('Never mind')
+        choice = dialog.question('Select the item you are interested in selling:', item_names)
+        if choice == len(items):
+            return
+        else:
+            item = items[choice]
+            hero = game.save_data.hero
+            hero.get_inventory().remove(item)
+            hero.add_gold( int(item.get_value()*self.sell_factor) )
+            dialog.message('A bargain at twice the price!')
+            
+    def sell_text(self, item):
+        return '%d - %s' % ( int(item.get_value()*self.sell_factor), item.get_name() )
+
+    def item_text(self, item):
+        return '%d - %s' % (item.get_value(), item.get_name())
+
+    def purchased(self, item):
+        pass
 
 class Townsperson(MapEntity):
     "A normal MapEntity that talks when activated and moves around on its own"

@@ -118,7 +118,8 @@ class Dialog(object):
                     self.dispose()
                     screen.blit(screen_copy, (0,0))
                     if self.selection is not None:
-                        return self.options[self.selection]
+                        #return self.options[self.selection]
+                        return self.selection
                     else: return None
             
             self.draw(screen)

@@ -27,3 +27,4 @@ class fog_test(RPG):
         self.save_data.hero = hero
         hero.equip_weapon( items.Dagger() )
         hero.equip_armor( items.ToughShirt() )
+        hero.add_gold( 500 )
