@@ -73,7 +73,10 @@ class MapBase:
         self.char_min_y = int(SCREEN_SIZE[1] * TILE_SIZE * 0.3)
         self.char_max_y = int(SCREEN_SIZE[1] * TILE_SIZE * 0.7)
         self.character = None
+        self.sprites = []
         self.update()
+        self.action_listeners = {}
+        self.entry_listeners = {}
 
     def dispose(self):
         self.tile_manager.clear()
@@ -92,6 +95,11 @@ class MapBase:
                 location.draw(screen, self.x_offset, self.y_offset)
         if self.character is not None:
             self.character.draw(screen, self.char_x, self.char_y)
+        for sprite in self.sprites:
+            x, y = sprite.map_pos
+            x = x * TILE_SIZE + self.x_offset
+            y = y * TILE_SIZE + self.y_offset
+            sprite.draw(screen, x, y)
 
     def visible_cols(self):
         start_col = max(0, -self.x_offset / TILE_SIZE)
@@ -119,6 +127,13 @@ class MapBase:
         self.char_y = character_pos[1] * TILE_SIZE
         self.character.update()
 
+    def place_sprite(self, sprite, sprite_pos):
+        sprite.map_pos = sprite_pos
+        self.sprites.append(sprite)
+
+    def add_entry_listener(self, x, y, listener):
+        self.entry_listeners[ (x,y) ] = listener
+
     def update(self):
         """Invoked once per cycle of the event loop, to allow animation to update"""
         if self.character is not None:
@@ -130,9 +145,13 @@ class MapBase:
                 if x >= TILE_SIZE:
                     self.character_pos = add(self.character_pos,
                                              self.character_direction)
-                    # TODO: Emit some kind of move_complete event
                     self.character_direction = None
                     self.character_offset = (0,0)
+
+                    # See if there is a listener on entry to this square
+                    if self.entry_listeners.has_key( self.character_pos ):
+                        self.entry_listeners[self.character_pos]()
+                        
                 self.char_x = self.character_offset[0] 
                 self.char_x = self.char_x + TILE_SIZE*self.character_pos[0]
                 self.char_x = self.char_x + self.x_offset
@@ -152,6 +171,7 @@ class MapBase:
                     self.y_offset = self.y_offset - self.char_y + self.char_max_y
                     self.char_y = self.char_max_y
             self.character.update()
+            for sprite in self.sprites: sprite.update()
 
     def run(self, screen):
 
