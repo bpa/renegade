@@ -237,6 +237,12 @@ class MapBase:
         self.frame = 0
         self.map_frames_dirty = [True,True,True,True]
         self.map_frames = []
+        self.show_hud = True
+        self.hud_font = pygame.font.Font(None, 20)
+        self.hud_color = pygame.color.Color('#222222')
+        self.hud_rows = 2
+        self.heal_points = 0
+        self.regen_rate = 2000000000
         for f in range(4):
 #TODO Add non hardcoded values for buffer
 #TODO Make sure we don't make a larger surface than we need
@@ -248,6 +254,9 @@ class MapBase:
     def dispose(self):
         self.tile_manager.clear()
         self.screen = None
+    
+    def set_regen_rate(self, rate):
+        self.regen_rate = rate
 
     def get(self, x, y):
         if x<0 or y<0: return None
@@ -289,6 +298,9 @@ class MapBase:
         self.place_entity(character, pos, passable, direction)
         self.calculate_tile_coverage(self.viewport)
 
+    def place_hero(self, hero):
+        self.hero = hero
+
     def place_entity(self, entity, entity_pos, passable=False, direction=NORTH):
         entity.face(direction)
         entity.map = self
@@ -322,6 +334,21 @@ class MapBase:
     def draw(self, screen):
         screen.blit(self.map_frames[self.frame], (0,0), self.offset)
         self.entities.draw(screen)
+        if self.show_hud:
+            self.draw_hud(screen)
+
+    def draw_hud(self, screen):
+        hero = self.hero
+        text = "HP: %d/%d  Exp: %d  Level: %d" % \
+                (hero.get_hp(), hero.get_max_hp(), hero.get_exp(), hero.get_level())
+        self.draw_hud_text(text, 2, screen)
+        text = "Weapon: %s  Armor: %s" % (hero.weapon.get_name(), hero.armor.get_name())
+        self.draw_hud_text(text, 1, screen)
+
+    def draw_hud_text(self, text, row, screen):
+        rendered = self.hud_font.render(text, True, self.hud_color).convert_alpha()
+        base = screen.get_rect().height
+        screen.blit(rendered, (0, base - row*self.hud_font.get_height()))
         
     def build_current_frame(self):
 #TODO Decide if map_tile_coverage is the right name for this
@@ -368,9 +395,16 @@ class MapBase:
             #I wish there was a better place for this code, but I can't think of any
             if self.character is not None and self.character.entered_tile:
                 self.character.entered_tile = False
+                self.check_heal()
                 # See if there is a listener on entry to this square
                 if self.entry_listeners.has_key( self.character.pos ):
                     self.entry_listeners[self.character.pos]()
+
+    def check_heal(self):
+        self.heal_points = self.heal_points + 1
+        if self.heal_points >= self.regen_rate:
+            self.hero.regenerate()
+            self.heal_points = 0
 
     def character_activate(self):
         target = add(self.character.pos, MOVE_VECTORS[self.character.facing])

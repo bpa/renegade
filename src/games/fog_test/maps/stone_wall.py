@@ -1,10 +1,11 @@
 from map import *
 from characters import Character
-import dialog, NPC
+import combat, dialog, NPC
 
 class StoneWall(MapBase):
     def __init__(self):
         MapBase.__init__(self,20,20)
+        self.set_regen_rate(1)
         self.set_location( (0,0), 'stone', False )
         self.set_location( (1,1), 'stone', False )
         self.set_location( (2,2), 'stone', False )
@@ -21,6 +22,7 @@ class StoneWall(MapBase):
         sprite.always_animate = True
         sprite.animation_speed = 10
         self.add_entry_listener(8,2, self.walk_in_front_of_dude)
+        self.add_entry_listener(8,3, self.random_fight)
 
         tp = NPC.Townsperson('dude_map')
         self.place_entity(tp, (7,7) )
@@ -53,4 +55,6 @@ class StoneWall(MapBase):
         elif choice == "Who knows?":
             dialog.message("Ummm.. you're supposed to know that.")
     
-
+    def random_fight(self):
+        monster = combat.gallery.generate_monster(1)
+        combat.Combat(self.hero, monster, pygame.display.get_surface())

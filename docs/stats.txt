@@ -1,0 +1,43 @@
+First off, let's define some terms:
+  AC - Armor Class.  This describes how difficult it is to hit you.
+  With no armor, a level 1 character would have a default AC of 10.
+  The lower the AC is, the more difficult it is to land a blow.
+
+  THAC0 - "To Hit AC 0" This is a measure of how likely you are to
+  land a blow.  Specifically, to hit an opponent with an AC of 0, you
+  would need to roll your THAC0 or above on a d20.  The lower the
+  THAC0 is, the more likely a blow is to hit.
+
+  ArmorRating - A measure of the effectiveness of Armor.  Skin has
+  an ArmorRating of 0.  Higher armor ratings are better.
+
+Our beloved hero has 3 main stats, each of which start at 10 for a
+1st level character, and increase as the character gains levels:
+
+Agility:
+  -to AC, First Strike.
+
+Strength:
+  +to hit, +to damage
+
+Vitality:
+  Max HP, HP Regeneration Rate
+
+In addition to these, weapons and armor provide the following:
+
+Weapon:
+  Determine base hit damage
+
+Armor:
+  Lower AC (by ArmorRating value)
+
+These 3 attributes and 2 item types determine all other calculated
+attributs as follows:
+
+AC = 20 - ArmorRating - Agility
+THAC0 = 30 - Strength
+Damage = Weapon_Base * (Strength/10)
+FirstStrike = Agility + 1d20 
+  (Attacks happen FirstStrike order, highest to lowest)
+MaxHP = 2 * Vitality
+Regen = 5% * MaxHP each regen phase.
