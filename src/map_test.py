@@ -74,7 +74,7 @@ def test_main_loop():
         if up: current_map.move_character_up()
         if down: current_map.move_character_down()
         current_map.update()
-        current_map.draw(screen)        
+        current_map.draw(screen)
         pygame.display.flip()
 
 test_main_loop()
