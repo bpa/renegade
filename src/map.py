@@ -4,7 +4,10 @@ import pygame.image
 from pygame.locals import *
 
 import util
+import events
 from conf import *
+from locals import *
+
 
 def add(a, b):
     return (a[0]+b[0], a[1]+b[1])
@@ -71,6 +74,9 @@ class MapBase:
         self.character = None
         self.update()
 
+    def dispose(self):
+        self.tile_manager.
+
     def get(self, x, y):
         try:
             return self.rows[x][y]
@@ -134,6 +140,26 @@ class MapBase:
                     self.char_y = self.char_max_y
             self.character.update()
 
+    def run(self, screen):
+
+        # The main event loop for rendering the map
+        clock = pygame.time.Clock()
+        event_bag = events.EventUtil()
+        while True:
+            clock.tick(20)
+        
+            for event in event_bag.process_sdl_events():
+                if event.type == QUIT_EVENT:
+                    return
+            
+            if event_bag.is_left(): self.move_character_left()
+            if event_bag.is_right(): self.move_character_right()
+            if event_bag.is_up(): self.move_character_up()
+            if event_bag.is_down(): self.move_character_down()
+            self.update()
+            self.draw(screen)
+            pygame.display.flip()
+
     def move_character_left(self):
         x,y = self.character_pos
         target = (x-1, y)
@@ -174,3 +200,6 @@ class TileManager(object):
             image = util.load_image(TILES_DIR, name)
             self.tiles[name] = image
         return self.tiles[name]
+
+    def clear(self):
+        self.tiles.clear()
