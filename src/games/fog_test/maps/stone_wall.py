@@ -1,6 +1,6 @@
 from map import MapBase
 from characters import Character
-from dialog import Dialog
+import dialog
 
 class StoneWall(MapBase):
     def __init__(self):
@@ -21,6 +21,14 @@ class StoneWall(MapBase):
         self.add_entry_listener(8,2, self.walk_in_front_of_dude)
 
     def walk_in_front_of_dude(self):
-        dialog = Dialog("You stand before the wise dude!")       
-        dialog.run( self.get_screen() )
+        dialog.message("You stand before the wise dude!  Here is a lot " +
+                       "of text that you will need to split across at " +
+                       "least two lines, perhaps several more!  And as " +
+                       "a special feature, if this first line is longer " +
+                       "than the next dialog, then it will even be trimmed " +
+                       "properly!")       
+        dialog.message("Since this is a very very wise man, he has much " +
+                       "to say to you.  This may even spill over into " +
+                       "another dialog!")       
+        
 
