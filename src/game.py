@@ -4,7 +4,7 @@ import pygame
 import pygame.image
 from pygame.locals import *
 
-class game_info_object:
+class save_game_object:
     def __init__(self):
         pass
 
@@ -12,15 +12,15 @@ class game:
     def __init__(self, opts):
         self.opts = opts
         self.name = "Renegade game"
-        self.game_info = game_info_object()
+        self.save_data = save_game_object()
         pygame.init()
         self.screen = pygame.display.set_mode((opts['width'], opts['height']))
 
     def load(self, game):
-        self.game_info = pickle.load(open(os.path.join(SAVE_GAMES_DIR,game)))
+        self.save_data = pickle.load(open(os.path.join(SAVE_GAMES_DIR,game)))
 
     def save(self, game):
-        pickle.dump(self.game_info,open(os.path.join(SAVE_GAMES_DIR,game),'wb'))
+        pickle.dump(self.save_data,open(os.path.join(SAVE_GAMES_DIR,game),'wb'))
 
     def run(self):
         pygame.display.set_caption(self.name)
@@ -49,18 +49,18 @@ class game:
                     elif event.key == K_DOWN:
                         self.down_event()
             
-            self.game_info.map.update()
-            self.game_info.map.draw(self.screen)
+            self.save_data.map.update()
+            self.save_data.map.draw(self.screen)
             pygame.display.flip()
 
     def up_event(self):
-        self.game_info.map.move_character_up()
+        self.save_data.map.move_character_up()
 
     def down_event(self):
-        self.game_info.map.move_character_down()
+        self.save_data.map.move_character_down()
 
     def left_event(self):
-        self.game_info.map.move_character_left()
+        self.save_data.map.move_character_left()
 
     def right_event(self):
-        self.game_info.map.move_character_right()
+        self.save_data.map.move_character_right()
