@@ -1,26 +1,34 @@
 import pygame
 from pygame.locals import *
+from pygame.time import Clock
+
 from locals import *
+from conf import *
 
 class EventUtil:
 
     def __init__(self):
-        self.left = False
-        self.right = False
-        self.up = False
-        self.down = False
+        self.left = -1 
+        self.right = -1
+        self.up = -1
+        self.down = -1
+        self.action = -1
+        self.clock = Clock()
 
     def is_left(self):
-        return self.left
+        return self.left>=0
 
     def is_right(self):
-        return self.right
+        return self.right>=0
 
     def is_up(self):
-        return self.up
+        return self.up>=0
 
     def is_down(self):
-        return self.down
+        return self.down>=0
+
+    def is_action(self):
+        return self.action>=0
 
     def process_sdl_events(self):
         """A generator to process raw SDL events into logical events,
@@ -37,23 +45,60 @@ class EventUtil:
                     yield pygame.event.Event(QUIT_EVENT)
                     break
                 elif event.key == K_LEFT:
-                    self.left = True
-                    self.right = False
+                    self.left = 0
+                    self.right = -1
+                    yield pygame.event.Event(PUSH_ARROW_EVENT)
                 elif event.key == K_RIGHT:
-                    self.right = True
-                    self.left = False
+                    self.right = 0
+                    self.left = -1
+                    yield pygame.event.Event(PUSH_ARROW_EVENT)
                 elif event.key == K_UP:
-                    self.up = True
-                    self.down = False
+                    self.up = 0
+                    self.down = -1
+                    yield pygame.event.Event(PUSH_ARROW_EVENT)
                 elif event.key == K_DOWN:
-                    self.down = True
-                    self.up = False
+                    self.down = 0
+                    self.up = -1
+                    yield pygame.event.Event(PUSH_ARROW_EVENT)
+                elif event.key == K_LCTRL:
+                    self.action = 0
+                    yield pygame.event.Event(PUSH_ACTION_EVENT)
             elif event.type == KEYUP:
                 if event.key == K_LEFT:
-                    self.left = False
+                    self.left = -1
                 elif event.key == K_RIGHT:
-                    self.right = False
+                    self.right = -1
                 elif event.key == K_UP:
-                    self.up = False
+                    self.up = -1
                 elif event.key == K_DOWN:
-                    self.down = False
+                    self.down = -1
+                elif event.key == K_LCTRL:
+                    self.action = -1
+
+        elapsed = self.clock.tick()
+        if self.is_left():
+            self.left = self.left + elapsed
+            if self.left > REPEAT_DELAY:
+                self.left = 0
+                yield pygame.event.Event(REPEAT_ARROW_EVENT)
+        elif self.is_right():
+            self.right = self.right + elapsed
+            if self.right > REPEAT_DELAY:
+                self.right = 0
+                yield pygame.event.Event(REPEAT_ARROW_EVENT)
+        if self.is_up():
+            self.up = self.up + elapsed
+            if self.up > REPEAT_DELAY:
+                self.up = 0
+                yield pygame.event.Event(REPEAT_ARROW_EVENT)
+        elif self.is_down():
+            self.down = self.down + elapsed
+            if self.down > REPEAT_DELAY:
+                self.down = 0
+                yield pygame.event.Event(REPEAT_ARROW_EVENT)
+        if self.is_action():
+            self.action = self.action + elapsed
+            if self.action > REPEAT_DELAY:
+                self.action = 0
+                yield pygame.event.Event(REPEAT_ACTION_EVENT)
+            

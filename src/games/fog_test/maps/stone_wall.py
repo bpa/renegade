@@ -27,8 +27,22 @@ class StoneWall(MapBase):
                        "a special feature, if this first line is longer " +
                        "than the next dialog, then it will even be trimmed " +
                        "properly!")       
-        dialog.message("Since this is a very very wise man, he has much " +
-                       "to say to you.  This may even spill over into " +
-                       "another dialog!")       
+        choice = dialog.question(
+           "Since this is a very very wise man, he has much " +
+           "to say to you.  This may even spill over into " +
+           "another dialog!", 
+           [ "No, make it stop!", 
+             "Yes, Continue!",
+             "I can't decide",
+             "Who knows?" ])       
         
+        if choice == "No, make it stop!":
+            dialog.message("No! Stopping is not an option!")
+        elif choice == "Yes, Continue!":
+            dialog.message("Good, I appreciate your patience.")
+        elif choice == "I can't decide":
+            dialog.message("Well, hurry and make up your mind!")
+        elif choice == "Who knows?":
+            dialog.message("Ummm.. you're supposed to know that.")
+    
 
