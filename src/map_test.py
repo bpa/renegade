@@ -4,7 +4,7 @@ from pygame.locals import *
 import map
 import characters
 
-def test_main_loop():
+def run_test():
     pygame.init()
 
     screen = pygame.display.set_mode((352, 352))
@@ -30,5 +30,6 @@ def test_main_loop():
     character = characters.Character( ('dude1', 'dude2', 'dude3', 'dude4') )
     current_map.place_character( character, (4,4) )
     current_map.run(screen)
+    current_map.dispose()
 
-test_main_loop()
+run_test()

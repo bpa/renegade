@@ -1,6 +1,7 @@
 import os
 import pygame
 import pygame.image
+import pygame.color
 from pygame.locals import *
 
 import util
@@ -75,7 +76,7 @@ class MapBase:
         self.update()
 
     def dispose(self):
-        self.tile_manager.
+        self.tile_manager.clear()
 
     def get(self, x, y):
         try:
@@ -84,11 +85,22 @@ class MapBase:
             return None
     
     def draw(self, screen):
-        for row in self.rows:
-            for location in row:
+        screen.fill( pygame.color.Color('black'), screen.get_rect() )
+        for row in self.visible_rows():
+            for location in self.visible_cols(row):
                 location.draw(screen, self.x_offset, self.y_offset)
         if self.character is not None:
             self.character.draw(screen, self.char_x, self.char_y)
+
+    def visible_rows(self):
+        start_row = max(0, -self.x_offset / TILE_SIZE)
+        stop_row = start_row + SCREEN_SIZE[0] + 1
+        return self.rows[start_row:stop_row]
+
+    def visible_cols(self,row):
+        start_col = max(0, -self.y_offset / TILE_SIZE)
+        stop_col = start_col + SCREEN_SIZE[1] + 1
+        return row[start_col:stop_col]
 
     def set_location(self, loc, tile_name, walkable=True):
         x, y = loc
