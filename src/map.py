@@ -164,6 +164,7 @@ class MapBase:
         
             for event in event_bag.process_sdl_events():
                 if event.type == QUIT_EVENT:
+                    self.dispose()
                     return
             
             if event_bag.is_left(): self.move_character_left()
