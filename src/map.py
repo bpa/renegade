@@ -80,6 +80,7 @@ class MapBase:
 
     def dispose(self):
         self.tile_manager.clear()
+        self.screen = None
 
     def get(self, x, y):
         if x<0 or y<0: return None
@@ -134,6 +135,9 @@ class MapBase:
     def add_entry_listener(self, x, y, listener):
         self.entry_listeners[ (x,y) ] = listener
 
+    def get_screen(self):
+        return self.screen
+
     def update(self):
         """Invoked once per cycle of the event loop, to allow animation to update"""
         if self.character is not None:
@@ -174,6 +178,7 @@ class MapBase:
             for sprite in self.sprites: sprite.update()
 
     def run(self, screen):
+        self.screen = screen
 
         # The main event loop for rendering the map
         clock = pygame.time.Clock()

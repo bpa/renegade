@@ -1,5 +1,6 @@
 from map import MapBase
 from characters import Character
+from dialog import Dialog
 
 class StoneWall(MapBase):
     def __init__(self):
@@ -20,5 +21,6 @@ class StoneWall(MapBase):
         self.add_entry_listener(8,2, self.walk_in_front_of_dude)
 
     def walk_in_front_of_dude(self):
-        print "You walked in front of the dude!"
+        dialog = Dialog("You stand before the wise dude!")       
+        dialog.run( self.get_screen() )
 
