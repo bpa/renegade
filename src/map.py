@@ -464,6 +464,14 @@ class MapBase:
         else:
             return 0
 
+    def get_tiles_from_ascii(self,ascii,tile_map):
+        for y in range(self.height):
+            line = ascii[y]
+            for x in range(self.width):
+                c = line[x]
+                self.set_location( (x,y), tile_map[c],
+                    tile_map['walkable'].find(c)!=-1 )
+
 class TileManager(object):
     def __init__(self):
         self.tiles = {}
