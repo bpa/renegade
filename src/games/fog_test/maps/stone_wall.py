@@ -1,6 +1,6 @@
 from map import *
 from characters import Character
-import dialog
+import dialog, NPC
 
 class StoneWall(MapBase):
     def __init__(self):
@@ -21,6 +21,12 @@ class StoneWall(MapBase):
         sprite.always_animate = True
         sprite.animation_speed = 10
         self.add_entry_listener(8,2, self.walk_in_front_of_dude)
+
+        tp = NPC.Townsperson('dude_map')
+        self.place_entity(tp, (7,7) )
+        tp.animation_speed = 5
+        tp.set_dialog(( "Hi", "Yeah, what?", "You still here?", \
+            "Why are you talking to me?", "I don't know anything that would help you", "ok, you must be bored", "please leave me alone"))
 
     def walk_in_front_of_dude(self):
         dialog.message("You stand before the wise dude!  Here is a lot " +

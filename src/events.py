@@ -28,7 +28,11 @@ class EventUtil:
         return self.down>=0
 
     def is_action(self):
-        return self.action>=0
+        """Basically pop action events so we don't get stuck in a loop"""
+        if self.action >= 0:
+            self.action = -1
+            return 1
+        return 0
 
     def process_sdl_events(self):
         """A generator to process raw SDL events into logical events,

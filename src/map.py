@@ -1,5 +1,6 @@
 import os
 from util import load_image
+from conf import *
 import pygame
 import pygame.image
 import pygame.color
@@ -28,25 +29,32 @@ class RenderEntity(RenderPlain):
         for s in spritedict.keys():
             surface_blit(s.image, s.rect, s.image_tile)
 
-    def tile_collision(self,pos):
-        """True if any MapEntity in the group occupies the pos(x,y)"""
+    def entity_collisions(self,pos):
+        """List of MapEntity in the group that occupy the pos(x,y)"""
+        entities = []
         spritedict = self.spritedict
         for s in spritedict.keys():
-            if s.pos == pos: return 1
-        return 0
+            if s.pos == pos: entities.append(s)
+        return entities
 
     def scroll(self, vector):
         spritedict = self.spritedict
         for s in spritedict.keys():
             s.rect.move_ip(vector)
     
+    def run_command(self, method):
+        spritedict = self.spritedict
+        cmd = "s.%s" % method
+        for s in spritedict.keys():
+            eval(cmd)
+        
 class MapEntity(Sprite):
     """MapEntity is a sprite that knows how to interact with a map.
        It contains code that can be run periodically, the default
        is to do nothing.  There are also methods for each type of 
        map event.  To do anything useful, subclass this"""
            
-    def __init__(self,image,tile_x=0,tile_y=0,direction=NORTH):
+    def __init__(self,image_map,tile_x=0,tile_y=0,direction=NORTH):
         """MapEntity(Surface, tile_x, tile_y, direction)
        
            Surface should be obtained from util.load_image
@@ -59,6 +67,7 @@ class MapEntity(Sprite):
            can also be set later with MapEntity.face(direction)
            legal values are map.NORTH, map.EAST, map.SOUTH, & map.WEST"""
 
+        image = util.load_image(CHARACTERS_DIR, image_map, True)
         Sprite.__init__(self)
         self.pos = (0,0)
         self.map = None
@@ -69,6 +78,7 @@ class MapEntity(Sprite):
         self.image_tile = Rect( self.image_base_x, self.image_base_y,
                                 TILE_SIZE, TILE_SIZE )
         self.rect = Rect(0,0,TILE_SIZE,TILE_SIZE)
+        self.facing = NORTH
         self.face(direction)
         self.next_frame()
         self.velocity = (0,0)
@@ -78,14 +88,15 @@ class MapEntity(Sprite):
         self.animation_count = 1
         self.animation_speed = 5
         self.entered_tile = False
+        self.can_trigger_actions = 0
 
     def speed(self, pixels_per_update):
         """speed(int) Set the movement speed, currently in pixels per update"""
         self.speed = pixels_per_update
 
     def face(self,direction):
-        self.direction = direction
-        self.image_tile.top = self.image_base_y + (direction * TILE_SIZE)
+        self.facing = direction
+        self.image_tile.top = self.image_base_y + (self.facing * TILE_SIZE)
 
     def next_frame(self):
         self.frame = self.frame + 1
@@ -99,7 +110,6 @@ class MapEntity(Sprite):
         self.pos = pos
         self.rect.top = (TILE_SIZE * y)
         self.rect.left = (TILE_SIZE * x)
-#TODO interface with map to see where you're supposed to be on the screen
 
     def move(self, direction, face_dir=True):
         """move(direction, face_direction=True)
@@ -107,7 +117,7 @@ class MapEntity(Sprite):
         if not self.moving:
             target = add(self.pos, MOVE_VECTORS[direction])
             if face_dir: self.face(direction)
-            if self.map.move_ok(target):
+            if self.map.move_ok(target, self):
                 self.direction = MOVE_VECTORS[direction]
                 self.pos = target
                 self.moving = True
@@ -137,6 +147,29 @@ class MapEntity(Sprite):
                     self.animation_count = 1
                     self.next_frame()
 
+################## The following are all action methods ########################
+############ These are the ones you will override most commonly ################
+
+#TODO Decide if these methods should have a prefix like action_
+    def activate(self):
+        """Called when the character hits the action key while facing entity"""
+        pass
+
+    def touch(self):
+        """Called when the character makes contact with the entity
+           This can be one of the following conditions:
+              The character attempts to move into the entity
+              The entity attempts to move into the character
+           This will not be triggered if the sprites overlap temporarily.
+           If it should, add an enhancement request and I'll fix it"""
+        pass
+
+    def enter_map(self):
+        pass
+
+    def leave_map(self):
+        pass
+              
 class MapLocation(object):
     "One square on the overview map"
     def __init__(self, map, loc, tile, walkable=True):
@@ -252,11 +285,13 @@ class MapBase:
     def place_character(self, character, pos, passable=False, direction=NORTH):
         self.character = character
         character.map = self
+        character.can_trigger_actions = 1
         self.place_entity(character, pos, passable, direction)
         self.calculate_tile_coverage(self.viewport)
 
     def place_entity(self, entity, entity_pos, passable=False, direction=NORTH):
         entity.face(direction)
+        entity.map = self
         entity.move_to(entity_pos)
         self.entities.add(entity)
         if not passable:
@@ -285,7 +320,6 @@ class MapBase:
             self.map_frames_dirty[self.frame] = False
 
     def draw(self, screen):
-#TODO Move the map
         screen.blit(self.map_frames[self.frame], (0,0), self.offset)
         self.entities.draw(screen)
         
@@ -310,6 +344,7 @@ class MapBase:
         self.offset.width = screen.get_rect().width
         self.offset.height = screen.get_rect().height
 
+        self.entities.run_command('enter_map')
         # The main event loop for rendering the map
         clock = pygame.time.Clock()
         event_bag = events.EventUtil()
@@ -326,6 +361,7 @@ class MapBase:
             if event_bag.is_right(): self.move_character(EAST)
             if event_bag.is_up(): self.move_character(NORTH)
             if event_bag.is_down(): self.move_character(SOUTH)
+            if event_bag.is_action(): self.character_activate()
             self.update()
             self.draw(screen)
             pygame.display.flip()
@@ -336,6 +372,12 @@ class MapBase:
                 if self.entry_listeners.has_key( self.character.pos ):
                     self.entry_listeners[self.character.pos]()
 
+    def character_activate(self):
+        target = add(self.character.pos, MOVE_VECTORS[self.character.facing])
+        entities = self.non_passable_entities.entity_collisions(target)
+        for e in entities:
+            e.activate()
+        
     def move_character(self, dir):
         self.character.move(dir)
         if not self.scrolling:
@@ -371,12 +413,23 @@ class MapBase:
         for f in range(4):
             self.map_frames_dirty[f] = True
 
-    def move_ok(self, target_pos):
+    def move_ok(self, target_pos, character):
         x, y = target_pos
         target = self.get(x,y)
-        return target is not None \
-               and target.is_walkable() \
-               and not self.non_passable_entities.tile_collision(target_pos)
+        if target is not None and target.is_walkable():
+            entities = self.non_passable_entities.entity_collisions(target_pos)
+            if len(entities) > 0:
+                if character.can_trigger_actions:
+                    for e in entities:
+                        e.touch()
+                else:
+                    for e in entities:
+                        if e.can_trigger_actions: character.touch()
+                return 0
+            else:
+                return 1
+        else:
+            return 0
 
 class TileManager(object):
     def __init__(self):
