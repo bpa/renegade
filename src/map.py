@@ -57,8 +57,12 @@ class MapEntity(Sprite):
        It contains code that can be run periodically, the default
        is to do nothing.  There are also methods for each type of 
        map event.  To do anything useful, subclass this"""
+
+    def __init__(self, image_map=None):
+        if image_map is not None:
+            self.init(image_map)
            
-    def __init__(self,image_map,tile_x=0,tile_y=0,color_key=None):
+    def init(self,image_map,tile_x=0,tile_y=0,color_key=None):
         """MapEntity(Surface, tile_x, tile_y, direction)
        
            Surface should be obtained from util.load_image
@@ -77,7 +81,7 @@ class MapEntity(Sprite):
         self.map = None
         self.image = image
         self.image_base_x = tile_x * 3 * TILE_SIZE
-        self.image_base_y = tile_y * 3 * TILE_SIZE
+        self.image_base_y = tile_y * 4 * TILE_SIZE
         self.frame = 0
         self.image_tile = Rect( self.image_base_x, self.image_base_y,
                                 TILE_SIZE, TILE_SIZE )
@@ -410,10 +414,11 @@ class MapBase:
             self.heal_points = 0
 
     def character_activate(self):
-        target = add(self.character.pos, MOVE_VECTORS[self.character.facing])
-        entities = self.non_passable_entities.entity_collisions(target)
-        for e in entities:
-            e.activate()
+        if not self.character.moving:
+            target = add(self.character.pos,MOVE_VECTORS[self.character.facing])
+            entities = self.non_passable_entities.entity_collisions(target)
+            for e in entities:
+                e.activate()
         
     def move_character(self, dir):
         self.character.move(dir)
