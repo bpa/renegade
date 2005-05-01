@@ -7,12 +7,12 @@ class Overworld(MapBase):
         MapBase.__init__(self,11,11)
         self.set_regen_rate(5)
         self.get_tiles_from_ascii(self.__ascii_art(),{
-            'M': 'stone',
-            ' ': 'water',
-            'x': 'town',
-            'i': 'trees',
-            '_': 'dirt',
-            'O': 'cave',
+            'M': ('stone',),
+            ' ': ('water',),
+            'x': ('town',),
+            'i': ('trees',),
+            '_': ('dirt',),
+            'O': ('cave',),
             'walkable': 'xi_O'})
         self.add_entry_listener(8,4, self.enter_town)
         self.add_entry_listener(8,1, self.enter_cave)

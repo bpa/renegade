@@ -3,8 +3,8 @@ import dialog, random
 import game
 
 class Merchant(MapEntity):
-    def __init__(self,image,tile_x=0,tile_y=0,direction=NORTH):
-        MapEntity.__init__(self,image,tile_x,tile_y,direction)
+    def __init__(self,image=None):
+        MapEntity.__init__(self,image)
         self.intro = 'INTRO'
         self.item_list = []
         self.item_names = []
@@ -66,8 +66,8 @@ class Merchant(MapEntity):
 class Townsperson(MapEntity):
     "A normal MapEntity that talks when activated and moves around on its own"
     
-    def __init__(self,image,tile_x=0,tile_y=0,direction=NORTH):
-        MapEntity.__init__(self,image,tile_x,tile_y,direction)
+    def __init__(self,image=None):
+        MapEntity.__init__(self,image)
         self.__next_move = 30
 
     def set_dialog(self, messages):

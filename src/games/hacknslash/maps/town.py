@@ -2,29 +2,64 @@ from map import *
 from characters import Character
 import dialog, NPC
 import core
+from games.hacknslash.items import *
+
+class ArmorMerchant(NPC.Merchant):
+    def __init__(self, sprite_name=None):
+        NPC.Merchant.__init__(self, sprite_name)
+        self.set_intro("Welcome to Ye Olde Armor Shoppe!  How may I be of service?")
+        self.set_item_list( (ToughShirt(), DiamondPlate()) )
+
+    def purchased(self, armor):
+        game.save_data.hero.equip_armor( armor )
+
+class WeaponMerchant(NPC.Merchant):
+    def __init__(self, sprite_name=None):
+        NPC.Merchant.__init__(self, sprite_name)
+        self.set_intro("Warrior, I have arms to sell.  Have you gold to buy?")
+        self.set_item_list( (Dagger(), Dirk(), LightSaber()) )
+
+    def purchased(self, weapon):
+        game.save_data.hero.equip_weapon( weapon )
 
 class AdventureTown(MapBase):
     def __init__(self):
         MapBase.__init__(self,11,11)
         self.set_regen_rate(5)
         self.get_tiles_from_ascii(self.__ascii_art(),{
-            '*': 'stone',
-            ' ': 'floor',
-            '-': 'plant',
-            '^': 'water',
+            '*': ('Castle_Set2',(5,0)),
+            ' ': ('DungeonSet',(1,0)),
+            '-': ('Castle_Set2',(4,4)),
+            '^': ('water',),
             'walkable': ' -'})
 
+        # Place armor and weapons merchants
+        armor_dude = ArmorMerchant()
+        armor_dude.init('m03', 1, 1, -1)
+        self.place_entity( armor_dude, (3,2) )
+        armor_dude.face(SOUTH)
+        armor_dude.always_animate = True
+        armor_dude.animation_speed = 40
+        weapon_dude = WeaponMerchant()
+        weapon_dude.init('m26', 0, 0, -1)
+        self.place_entity( weapon_dude, (7,6) )
+        weapon_dude.face(SOUTH)
+        weapon_dude.always_animate = True
+        weapon_dude.animation_speed = 37
+
         # Put a wise dude here, to talk to.
-        sprite = Character('dude_map')
+        sprite = Character()
+        sprite.init('m05', 2, 2, -1)
         self.place_entity( sprite, (9,1) )
         sprite.face(SOUTH)
         sprite.always_animate = True
-        sprite.animation_speed = 10
+        sprite.animation_speed = 18
         self.add_entry_listener(9,2, self.walk_in_front_of_dude)
         self.add_entry_listener(0,8, self.leave_town)
         self.add_entry_listener(10,8, self.leave_town)
 
-        tp = NPC.Townsperson('dude_map')
+        tp = NPC.Townsperson()
+        tp.init('m05', 0, 1, -1)
         self.place_entity(tp, (7,7) )
         tp.animation_speed = 5
         tp.set_dialog(( "Hi", "Yeah, what?", "You still here?",

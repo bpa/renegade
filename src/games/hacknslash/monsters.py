@@ -1,9 +1,14 @@
 import combat
 from combat import Monster
 
+registered=false
+
 def register_monsters():
-    combat.gallery.add_monster( range(1,2), Snotling ) 
-    combat.gallery.add_monster( range(1,3), LargeSlug ) 
+    global registered
+    if not registered:
+        combat.gallery.add_monster( range(1,2), Snotling ) 
+        combat.gallery.add_monster( range(1,3), LargeSlug ) 
+        registered = True
 
 class Snotling(Monster):
     def __init__(self):
@@ -27,3 +32,4 @@ class LargeSlug(Monster):
         self.exp_value = 3
         self.gold = '2d4'
 
+register_monsters()

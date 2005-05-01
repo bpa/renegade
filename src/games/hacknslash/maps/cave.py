@@ -5,8 +5,8 @@ class Cave(MapBase):
         MapBase.__init__(self,55,44)
         self.set_regen_rate(5)
         self.get_tiles_from_ascii(self.__ascii_art(), {
-            ' ': 'stone', '.': 'floor', '+': 'cave','@': 'grass',
-            '0': 'dirt',
+            ' ': ('stone',), '.': ('floor',), '+': ('cave',),'@': ('grass',),
+            '0': ('dirt',),
             'walkable': '.+@0' })
         self.add_entry_listener(5,9, self.exit_cave)
         self.add_entry_listener(5,41, self.win_game)

@@ -292,10 +292,10 @@ class MapBase:
             self.map_non_scroll_region = \
                    self.viewport.inflate(SCROLL_EDGE*-2,SCROLL_EDGE*-2)
 
-    def set_location(self, loc, tile_name, walkable=True):
+    def set_location(self, loc, tile_name, walkable=True, tile_pos=None):
         x, y = loc
         location = self.get(x, y)
-        tile = self.tile_manager.get_tile(tile_name)
+        tile = self.tile_manager.get_tile(tile_name, None, tile_pos)
         location.set_tile(tile)
         location.set_walkable(walkable)
 
@@ -479,18 +479,29 @@ class MapBase:
             line = ascii[y]
             for x in range(self.width):
                 c = line[x]
-                self.set_location( (x,y), tile_map[c],
-                    tile_map['walkable'].find(c)!=-1 )
+                args = tile_map[c]
+                pos = None
+                if len(args) > 1:
+                    pos = args[1]
+                self.set_location( (x,y), args[0],
+                    tile_map['walkable'].find(c)!=-1, pos )
 
 class TileManager(object):
     def __init__(self):
         self.tiles = {}
 
-    def get_tile(self, name, colorkey=None):
-        if not self.tiles.has_key(name):
-            image = util.load_image(TILES_DIR, name)
-            self.tiles[name] = image
-        return self.tiles[name]
+    def get_tile(self, name, colorkey=None, tile_pos=None):
+        key = (name, tile_pos)
+        if not self.tiles.has_key( key ):
+            print "Loading (%s, %s)" % key
+            image = util.load_image(TILES_DIR, name).convert()
+            if tile_pos is not None:
+                tmp = pygame.Surface( (TILE_SIZE, TILE_SIZE) )
+                rect = Rect(tile_pos[0]*TILE_SIZE, tile_pos[1]*TILE_SIZE,TILE_SIZE,TILE_SIZE)
+                tmp.blit(image, (0,0), rect)
+                image = tmp.convert()
+            self.tiles[key] = image
+        return self.tiles[key]
 
     def clear(self):
         self.tiles.clear()
