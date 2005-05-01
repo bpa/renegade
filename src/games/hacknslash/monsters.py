@@ -1,14 +1,11 @@
 import combat
 from combat import Monster
 
-registered=false
-
 def register_monsters():
-    global registered
-    if not registered:
-        combat.gallery.add_monster( range(1,2), Snotling ) 
-        combat.gallery.add_monster( range(1,3), LargeSlug ) 
-        registered = True
+    print "Registering monsters"
+    combat.gallery.add_monster( range(1,2), Snotling ) 
+    combat.gallery.add_monster( range(1,3), LargeSlug ) 
+    registered = True
 
 class Snotling(Monster):
     def __init__(self):

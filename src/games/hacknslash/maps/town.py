@@ -11,7 +11,7 @@ class ArmorMerchant(NPC.Merchant):
         self.set_item_list( (ToughShirt(), DiamondPlate()) )
 
     def purchased(self, armor):
-        game.save_data.hero.equip_armor( armor )
+        core.game.save_data.hero.equip_armor( armor )
 
 class WeaponMerchant(NPC.Merchant):
     def __init__(self, sprite_name=None):
@@ -20,7 +20,7 @@ class WeaponMerchant(NPC.Merchant):
         self.set_item_list( (Dagger(), Dirk(), LightSaber()) )
 
     def purchased(self, weapon):
-        game.save_data.hero.equip_weapon( weapon )
+        core.game.save_data.hero.equip_weapon( weapon )
 
 class AdventureTown(MapBase):
     def __init__(self):

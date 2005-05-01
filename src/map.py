@@ -241,6 +241,7 @@ class MapBase:
                     self.viewport.inflate(SCROLL_EDGE*-2,SCROLL_EDGE*-2)
         self.action_listeners = {}
         self.entry_listeners = {}
+        self.movement_listeners = []
         self.scrolling = False
         self.frame = 0
         self.map_frames_dirty = [True,True,True,True]
@@ -316,6 +317,9 @@ class MapBase:
 
     def add_entry_listener(self, x, y, listener):
         self.entry_listeners[ (x,y) ] = listener
+
+    def add_movement_listener(self, listener):
+        self.movement_listeners.append(listener)
 
     def update(self):
         """Invoked once per cycle of the event loop, to allow animation to update"""
@@ -404,6 +408,9 @@ class MapBase:
                 # See if there is a listener on entry to this square
                 if self.entry_listeners.has_key( self.character.pos ):
                     self.entry_listeners[self.character.pos]()
+                    if not self.running: break
+                for listener in self.movement_listeners:
+                    listener()
         self.dispose()
         return
 
