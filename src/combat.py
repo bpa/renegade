@@ -49,8 +49,7 @@ class Combat(object):
                 hero_initiative = hero_initiative + hero.get_initiative()
                 if monster.thaco - hero.get_ac() <= dice.roll('1d20'):
                     damage = monster.do_damage()
-                    message = 'The %s hits you for %d points of damage!' \
-                                % (monster.get_name(), damage)
+                    message = monster.damage_text(damage)
                     if hero.damage(damage):
                         dialog.message(message + '  You have died!')
                         break
@@ -102,5 +101,9 @@ class Monster(object):
 
     def get_initiative(self):
         return dice.roll('1d20') + self.agility
+
+    def damage_text(self, damage):
+        return 'The %s hits you for %d points of damage!' % \
+            (self.get_name(), damage)
 
 gallery = MonsterGallery()

@@ -88,18 +88,18 @@ class Hero(object):
         self.level = self.level + 1
         attribute = dice.roll('1d3')
         if attribute==1:
-            self.strength = self.strength + 1
+            self.strength = self.strength + 3
             new_val = self.strength
             message = 'strength'
         elif attribute==2:
-            self.agility = self.agility + 1
+            self.agility = self.agility + 3
             new_val = self.agility
             message = 'agility'
         elif attribute==3:
-            self.vitality = self.vitality + 1
+            self.vitality = self.vitality + 3
             new_val = self.vitality
             message = 'vitality'
-        self.exp_to_next_level = self.exp_to_next_level * 2
+        self.exp_to_next_level = self.exp_to_next_level * 1.5
         text = 'You have advanced to level %d.  Your %s has increased to %d.'
         dialog.message(text % (self.level, message, new_val))
         self.recalculate()

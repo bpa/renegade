@@ -56,7 +56,7 @@ class Cave(MapBase):
         print "You have defeated the evil Minotaur and won!"
 
     def random_fight(self):
-        monster = combat.gallery.generate_monster(1)
+        monster = combat.gallery.generate_monster(self.monster_level)
         hero = core.game.save_data.hero
         combat.Combat(hero, monster, pygame.display.get_surface())
 

@@ -17,6 +17,9 @@ class Snotling(Monster):
         self.agility = 14
         self.exp_value = 2
         self.gold = '1d6'
+    def damage_text(self, damage):
+        return 'The %s discharges its nose at you for %d points of damage!' % \
+            (self.get_name(), damage)
 
 class LargeSlug(Monster):
     def __init__(self):
@@ -28,5 +31,7 @@ class LargeSlug(Monster):
         self.agility = 10
         self.exp_value = 3
         self.gold = '2d4'
+    def damage_text(self, damage):
+        return 'You slip on a puddle of slime for %d points of damage!' % damage
 
 register_monsters()
