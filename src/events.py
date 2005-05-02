@@ -8,13 +8,16 @@ from conf import *
 class EventUtil:
 
     def __init__(self):
+        self.clear()
+        self.clock = Clock()
+
+    def clear(self):
         self.left = -1 
         self.right = -1
         self.up = -1
         self.down = -1
         self.action = -1
         self.action2 = -1
-        self.clock = Clock()
 
     def is_left(self):
         return self.left>=0

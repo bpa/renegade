@@ -6,17 +6,21 @@ import re
 from pygame.locals import *
 
 import events
+import core
 from locals import *
 
 def message(text):
     d = Dialog(text)
     screen = pygame.display.get_surface()
     d.run(screen)
+    core.game.save_data.map.clear_key_state()
 
 def question(text, options):
     d = Dialog(text, options[:])
     screen = pygame.display.get_surface()
-    return d.run(screen)
+    ret = d.run(screen)
+    core.game.save_data.map.clear_key_state()
+    return ret
 
 class Dialog(object):
 

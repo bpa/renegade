@@ -373,6 +373,9 @@ class MapBase:
             x = x + TILE_SIZE
             y = 0
 
+    def clear_key_state(self):
+        self.event_bag.clear()
+
     def run(self):
         self.offset.width = core.screen.get_rect().width
         self.offset.height = core.screen.get_rect().height
@@ -381,6 +384,7 @@ class MapBase:
         # The main event loop for rendering the map
         clock = pygame.time.Clock()
         event_bag = events.EventUtil()
+        self.event_bag = event_bag
         iteration = 1
         while self.running:
             clock.tick(20)
