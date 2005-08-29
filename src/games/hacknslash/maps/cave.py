@@ -45,7 +45,7 @@ class Cave(MapBase):
         return temp
            
     def movement(self):
-        print "Currently at (%d, %d), monster level=%d" % (self.character.pos, self.monster_level)
+        print "Currently at (%d, %d), monster level=%d" % (self.character.pos[0], self.character.pos[1], self.monster_level)
         if self.monster_level < 20 and dice.roll('2d6') >= 12:
             self.random_fight()
     
