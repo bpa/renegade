@@ -1,6 +1,7 @@
 from map import *
 import dice
 import combat
+import dialog
 
 class Cave(MapBase):
     def __init__(self):
@@ -11,7 +12,7 @@ class Cave(MapBase):
             '0': ('dirt',),
             'walkable': '.+@0' })
         self.add_entry_listener(5,9, self.exit_cave)
-        self.add_entry_listener(5,41, self.win_game)
+        self.add_entry_listener(5,41, self.fight_minotaur)
         self.add_movement_listener(self.movement)
         self.monster_level = 1
 
@@ -44,21 +45,42 @@ class Cave(MapBase):
         return temp
            
     def movement(self):
-        print "Currently at (%d, %d)" % self.character.pos
-        print "Monster level: %d" % self.monster_level
-        if dice.roll('2d6') >= 10:
+        print "Currently at (%d, %d), monster level=%d" % (self.character.pos, self.monster_level)
+        if self.monster_level < 20 and dice.roll('2d6') >= 12:
             self.random_fight()
     
     def exit_cave(self):
         core.game.teleport(None, (8,1), None, 'overworld.Overworld')
-        
-    def win_game(self):
-        print "You have defeated the evil Minotaur and won!"
 
+    def fight_minotaur(self):
+        monster = combat.gallery.get_monster('The evil Minotaur')
+        hero = core.game.save_data.hero
+        fight = combat.Combat(hero, monster)
+        result = fight.run()
+        if result == 'win':
+            dialog.message('You breathe a sigh of relief at the sight of the once mighty ' +
+                'and fearsome minotaur lying defeated on the floor of his throne-room.  ' +
+                'By your victory, you have secured freedom for your village and broken the ' +
+                'siege by the forces of darkness.');
+            dialog.message('Well, at least until they rise again.  Dark forces have a ' +
+                'nasty habit of doing that.  But by then, perhaps there will be a sequel.')
+            dialog.message('Thanks for playing Hack ''n Slash!')
+            self.end_game()
+        else:
+            self.end_game()
+    
+    def end_game(self):
+        dialog.message('Thanks for playing Hack ''n Slash!')
+        self.running = False
+        core.game.running = False
+                   
     def random_fight(self):
         monster = combat.gallery.generate_monster(self.monster_level)
         hero = core.game.save_data.hero
-        combat.Combat(hero, monster, pygame.display.get_surface())
+        fight = combat.Combat(hero, monster)
+        result = fight.run()
+        if result == 'lose':
+            self.end_game()
 
     def __ascii_art(self):
         """This is just an xpm with the header stripped"""

@@ -6,9 +6,13 @@ import dice
 rand = random.Random()
 
 class Combat(object):
-    def __init__(self, hero, monster, screen):
+    def __init__(self, hero, monster):
         self.hero = hero
         self.monster = monster
+
+    def run(self):
+        monster = self.monster
+        hero = self.hero
         dialog.message('You have been attacked by a %s!' % monster.get_name())
         hero_initiative = hero.get_initiative()
         monster_initiative = monster.get_initiative()
@@ -38,7 +42,7 @@ class Combat(object):
                         mess = mess % (monster.get_name(), damage, gold, monster.get_exp_value())
                         dialog.message(mess)
                         hero.check_level()
-                        break
+                        return 'win'
                     else:
                         dialog.message('You hit the %s for %d points of damage.' % \
                                (monster.get_name(), damage))
@@ -52,7 +56,7 @@ class Combat(object):
                     message = monster.damage_text(damage)
                     if hero.damage(damage):
                         dialog.message(message + '  You have died!')
-                        break
+                        return 'lose'
                     else: dialog.message(message)
                 else:
                     dialog.message('The %s misses you!' % monster.get_name())
@@ -60,8 +64,11 @@ class Combat(object):
 class MonsterGallery(object):
     def __init__(self):
         self.monster_types = {}
+        self.monster_names = {}
 
     def add_monster(self, levels, type):
+        instance = type()
+        self.monster_names[instance.get_name()] = type
         mt = self.monster_types
         for level in levels:
             if mt.has_key(level):
@@ -72,6 +79,12 @@ class MonsterGallery(object):
     def generate_monster(self, monster_level):
         available = self.monster_types[monster_level]
         type = available[ rand.randint(0, len(available)-1) ]
+        monster = type()
+        monster.prepare()
+        return monster
+
+    def get_monster(self, name):
+        type = self.monster_names[name]
         monster = type()
         monster.prepare()
         return monster
