@@ -5,6 +5,7 @@ def register_monsters():
     print "Registering monsters"
     combat.gallery.add_monster( range(1,2), Snotling ) 
     combat.gallery.add_monster( range(1,3), LargeSlug ) 
+    combat.gallery.add_monster( range(2,4), Jellyfish ) 
     registered = True
 
 class Snotling(Monster):
@@ -33,5 +34,18 @@ class LargeSlug(Monster):
         self.gold = '2d4'
     def damage_text(self, damage):
         return 'You slip on a puddle of slime for %d points of damage!' % damage
+
+class Jellyfish(Monster):
+    def __init__(self):
+        self.name = "Jelly Fish"
+        self.max_hp = 15
+        self.attack_damage = '2d4'
+        self.thaco = 15
+        self.ac = 10
+        self.agility = 8
+        self.exp_value = 4
+        self.gold = '1d6'
+    def damage_text(self, damage):
+        return 'The Jellyfish stings you, for %d points of damage' % damage
 
 register_monsters()
