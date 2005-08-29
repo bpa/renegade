@@ -40,5 +40,5 @@ class Overworld(MapBase):
             core.game.teleport(None, ( 0,8), None, 'town.AdventureTown')
 
     def enter_cave(self):
-        core.game.teleport(None, (5,37), None, 'cave.Cave')
+        core.game.teleport(None, (5,9), None, 'cave.Cave')
 
