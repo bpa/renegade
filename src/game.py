@@ -1,8 +1,5 @@
 import os, pickle
 from conf import *
-import pygame
-import pygame.image
-from pygame.locals import *
 import core
 
 # Global reference to the currently loaded save data
@@ -17,14 +14,7 @@ class Game:
         self.opts = opts
         self.name = "Renegade game"
         self.save_data = SaveGameObject()
-        pygame.init()
-        dimensions = (opts['width'], opts['height'])
-        flags = 0
-        if opts['fullscreen']: flags = flags | FULLSCREEN
-        self.screen = pygame.display.set_mode(dimensions, flags)
-        core.screen = self.screen
         self.new_game(opts)
-        
 
     def load_map(self,map_name):
         """Loads a map by name.  This should always have a module.
@@ -45,10 +35,10 @@ class Game:
     def run(self):
         global save_data
         save_data = self.save_data
-        pygame.display.set_caption(self.name)
-        pygame.mouse.set_visible(0)
+        core.display.set_caption(self.name)
+        core.mouse.set_visible(0)
 
-        if not pygame.font:
+        if not core.font:
             print 'Unable to initialize font subsystem'
             exit
 

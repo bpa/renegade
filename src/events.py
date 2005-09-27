@@ -1,15 +1,13 @@
-import pygame
-from pygame.locals import *
-from pygame.time import Clock
-
-from locals import *
+import core
+from core import *
 from conf import *
+from locals import *
 
 class EventUtil:
 
     def __init__(self):
         self.clear()
-        self.clock = Clock()
+        self.clock = core.time.Clock()
 
     def clear(self):
         self.left = -1 
@@ -47,41 +45,41 @@ class EventUtil:
         logical events.
         """
 
-        for event in pygame.event.get():
+        for event in core.event.get():
             if event.type == QUIT:
-                yield pygame.event.Event(QUIT_EVENT)
+                yield core.event.Event(QUIT_EVENT)
                 break
             elif event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
-                    yield pygame.event.Event(QUIT_EVENT)
+                    yield core.event.Event(QUIT_EVENT)
                     break
                 elif event.key == K_LEFT:
                     self.left = 0
                     self.right = -1
-                    yield pygame.event.Event(PUSH_ARROW_EVENT)
+                    yield core.event.Event(PUSH_ARROW_EVENT)
                 elif event.key == K_RIGHT:
                     self.right = 0
                     self.left = -1
-                    yield pygame.event.Event(PUSH_ARROW_EVENT)
+                    yield core.event.Event(PUSH_ARROW_EVENT)
                 elif event.key == K_UP:
                     self.up = 0
                     self.down = -1
-                    yield pygame.event.Event(PUSH_ARROW_EVENT)
+                    yield core.event.Event(PUSH_ARROW_EVENT)
                 elif event.key == K_DOWN:
                     self.down = 0
                     self.up = -1
-                    yield pygame.event.Event(PUSH_ARROW_EVENT)
+                    yield core.event.Event(PUSH_ARROW_EVENT)
                 elif event.key == K_LCTRL or \
                      event.key == K_RETURN or \
                      event.key == K_SPACE or \
                      event.key == K_KP_ENTER:
                     self.action = 0
-                    yield pygame.event.Event(PUSH_ACTION_EVENT)
+                    yield core.event.Event(PUSH_ACTION_EVENT)
                 elif event.key == K_LSHIFT or \
                      event.key == K_RSHIFT or \
                      event.key == K_m:
                     self.action2 = 0
-                    yield pygame.event.Event(PUSH_ACTION2_EVENT)
+                    yield core.event.Event(PUSH_ACTION2_EVENT)
 
             elif event.type == KEYUP:
                 if event.key == K_LEFT:
@@ -107,30 +105,30 @@ class EventUtil:
             self.left = self.left + elapsed
             if self.left > REPEAT_DELAY:
                 self.left = 0
-                yield pygame.event.Event(REPEAT_ARROW_EVENT)
+                yield core.event.Event(REPEAT_ARROW_EVENT)
         elif self.is_right():
             self.right = self.right + elapsed
             if self.right > REPEAT_DELAY:
                 self.right = 0
-                yield pygame.event.Event(REPEAT_ARROW_EVENT)
+                yield core.event.Event(REPEAT_ARROW_EVENT)
         if self.is_up():
             self.up = self.up + elapsed
             if self.up > REPEAT_DELAY:
                 self.up = 0
-                yield pygame.event.Event(REPEAT_ARROW_EVENT)
+                yield core.event.Event(REPEAT_ARROW_EVENT)
         elif self.is_down():
             self.down = self.down + elapsed
             if self.down > REPEAT_DELAY:
                 self.down = 0
-                yield pygame.event.Event(REPEAT_ARROW_EVENT)
+                yield core.event.Event(REPEAT_ARROW_EVENT)
         if self.is_action():
             self.action = self.action + elapsed
             if self.action > REPEAT_DELAY:
                 self.action = 0
-                yield pygame.event.Event(REPEAT_ACTION_EVENT)
+                yield core.event.Event(REPEAT_ACTION_EVENT)
         if self.is_action2():
             self.action2 = self.action2 + elapsed
             if self.action2 > REPEAT_DELAY:
                 self.action2 = 0
-                yield pygame.event.Event(REPEAT_ACTION2_EVENT)
+                yield core.event.Event(REPEAT_ACTION2_EVENT)
             

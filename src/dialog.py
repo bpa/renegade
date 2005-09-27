@@ -1,23 +1,17 @@
-import pygame
-import pygame.font
-import pygame.display
-import pygame.draw
 import re
-from pygame.locals import *
-
 import events
 import core
 from locals import *
 
 def message(text):
     d = Dialog(text)
-    screen = pygame.display.get_surface()
+    screen = core.display.get_surface()
     d.run(screen)
     core.game.save_data.map.clear_key_state()
 
 def question(text, options):
     d = Dialog(text, options[:])
-    screen = pygame.display.get_surface()
+    screen = core.display.get_surface()
     ret = d.run(screen)
     core.game.save_data.map.clear_key_state()
     return ret
@@ -25,7 +19,7 @@ def question(text, options):
 class Dialog(object):
 
     def __init__(self, text, options=None):
-        self.font = pygame.font.Font(None, 20)
+        self.font = core.font.Font(None, 20)
         self.text = text
         self.options = options
         if options is not None:
@@ -49,7 +43,7 @@ class Dialog(object):
             y_pos = y_pos + self.font.get_linesize() / 2 # Center it in line
             rect = self.rect.move(10, y_pos)
             center = (rect.left, rect.top)
-            pygame.draw.circle(screen, self.text_color, center, 5)
+            core.draw.circle(screen, self.text_color, center, 5)
 
     def render_one_line(self, line):
         return self.font.render(line, True, self.text_color).convert_alpha()
@@ -88,12 +82,12 @@ class Dialog(object):
     def run(self, screen):
 
         # Calculate the size of the dialog
-        self.rect = pygame.Rect(0,0,0,0)
+        self.rect = core.Rect(0,0,0,0)
         self.rect.width = int(screen.get_width() * 0.7)
 
         # Precalculate some stuff
-        self.fill_color = pygame.color.Color('blue')
-        self.text_color = pygame.color.Color('white')
+        self.fill_color = core.color.Color('blue')
+        self.text_color = core.color.Color('white')
         self.split_text()
         self.render_text()
         self.rect.center = screen.get_rect().center
@@ -101,10 +95,10 @@ class Dialog(object):
         # Save off a copy of the screen that I'm about to overwrite
         #screen_copy = screen.copy()
         #copy doesn't appear to exist on FreeBSD or Windows
-        screen_copy = pygame.Surface(screen.get_size())
+        screen_copy = core.Surface(screen.get_size())
         screen_copy.blit(screen,(0,0))
     
-        clock = pygame.time.Clock()
+        clock = core.time.Clock()
         event_bag = events.EventUtil()
         while True:
             for event in event_bag.process_sdl_events():
@@ -127,7 +121,7 @@ class Dialog(object):
                     else: return None
             
             self.draw(screen)
-            pygame.display.flip()
+            core.display.flip()
             clock.tick(20)
 
     def dispose(self):

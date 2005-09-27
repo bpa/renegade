@@ -34,8 +34,8 @@ class Combat(object):
                     damage = int(hero.weapon.get_damage() * mult * hero.strength / 10.0)
                     if monster.damage(damage):
                         gold = monster.get_gold()
-                        hero.gain_exp(monster.get_exp_value())
                         hero.add_gold(gold)
+                        hero.gain_exp(monster.get_exp_value())
                         mess = 'You hit the %s for %d points of damage, ' + \
                                'killing it!  You find %d gold.  For valor ' + \
                                'in combat, you receive %d experience points.'
@@ -88,35 +88,5 @@ class MonsterGallery(object):
         monster = type()
         monster.prepare()
         return monster
-
-class Monster(object):
-    def __init__(self):
-        pass
-
-    def prepare(self):
-        self.current_hp = self.max_hp
-
-    def damage(self, damage):
-        self.current_hp = self.current_hp - damage
-        return self.current_hp <= 0
-
-    def do_damage(self):
-        return dice.roll(self.attack_damage)
-
-    def get_name(self):
-        return self.name
-
-    def get_exp_value(self):
-        return self.exp_value
-
-    def get_gold(self):
-        return dice.roll(self.gold)
-
-    def get_initiative(self):
-        return dice.roll('1d20') + self.agility
-
-    def damage_text(self, damage):
-        return 'The %s hits you for %d points of damage!' % \
-            (self.get_name(), damage)
 
 gallery = MonsterGallery()

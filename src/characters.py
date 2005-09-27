@@ -4,23 +4,18 @@ import util
 from conf import *
 from map import MapEntity
 
-class Hero(object):
+class Character(object):
     def __init__(self):
-        self.inventory = []
-        self.strength = 10
-        self.agility = 10
-        self.vitality = 10
-        self.weapon = Weapon()
-        self.armor = Armor()
-        self.exp = 0
-        self.level = 1
-        self.exp_to_next_level = 10
-        self.gold = 0
-        self.recalculate()
-        self.heal()
-
-    def get_inventory(self):
-        return self.inventory
+      self.level = 1
+      self.hp = 10
+      self.max_hp = 10
+      self.strength = 10
+      self.agility = 10
+      self.vitality = 10
+      self.weapon = Weapon()
+      self.armor = Armor()
+      self.gold = 0
+      self.recalculate()
 
     def equip_weapon(self, weapon):
         if self.weapon != None:
@@ -39,39 +34,73 @@ class Hero(object):
         self.ac = 20 - self.armor.get_rating() - self.agility
         self.max_hp = 2 * self.vitality
 
-    def heal(self):
-        self.hp = self.max_hp
+    def damage(self, points):
+        self.hp = self.hp - points
+        return self.hp <= 0
+
+    def do_damage(self):
+        return dice.roll(self.attack_damage)
+
+    def get_gold(self):
+        return self.gold
+
+    def get_level(self):
+        return self.level
 
     def get_thaco(self):
         return self.thaco
     
-    def get_ac(self):
-        return self.ac
-
     def get_max_hp(self):
         return self.max_hp
 
     def get_hp(self):
         return self.hp
 
+    def get_ac(self):
+        return self.ac
+
     def get_exp(self):
         return self.exp
-
-    def get_level(self):
-        return self.level
 
     def get_initiative(self):
         return dice.roll('1d20') + self.agility
 
-    def get_gold(self):
-        return self.gold
+class Monster(Character):
+    def __init__(self):
+        Character.__init__(self)
+        self.gold = dice.roll("%iD10"%self.level)
+        self.exp_value = dice.roll("%iD10"%self.level)
+
+    def prepare(self):
+        self.current_hp = self.max_hp
+
+    def get_name(self):
+        return self.name
+
+    def get_exp_value(self):
+        return self.exp_value
+
+    def damage_text(self, damage):
+        return 'The %s hits you for %d points of damage!' % \
+            (self.get_name(), damage)
+
+class Hero(Character):
+    def __init__(self):
+        Character.__init__(self)
+        self.inventory = []
+        self.exp = 0
+        self.exp_to_next_level = 10
+        self.recalculate()
+        self.heal()
+
+    def get_inventory(self):
+        return self.inventory
+
+    def heal(self):
+        self.hp = self.max_hp
 
     def add_gold(self, amount):
         self.gold = self.gold + amount
-
-    def damage(self, points):
-        self.hp = self.hp - points
-        return self.hp <= 0
 
     def regenerate(self):
         self.hp = self.hp + int(0.05 * self.max_hp)
@@ -130,6 +159,3 @@ class Armor(Item):
 
     def get_rating(self):
         return self.rating
-
-class Character(MapEntity):
-    pass

@@ -1,5 +1,5 @@
-import combat
-from combat import Monster
+import combat, dice
+from characters import Monster
 
 def register_monsters():
     print "Registering monsters"
@@ -16,8 +16,15 @@ def register_monsters():
     combat.gallery.add_monster( range(99,99), Minotaur ) 
     registered = True
 
-class Snotling(Monster):
+class Enemy(Monster):
+  def damage_text(self, damage):
+    return "%s for %d points of damage!" % (self.dmesg, damage)
+  def get_gold(self):
+    return dice.roll(self.gold)
+  
+class Snotling(Enemy):
     def __init__(self):
+        Monster.__init__(self)
         self.name = "Snotling"
         self.max_hp = 6
         self.attack_damage = '1d4'
@@ -26,12 +33,11 @@ class Snotling(Monster):
         self.agility = 14
         self.exp_value = 2
         self.gold = '1d6'
-    def damage_text(self, damage):
-        return 'The %s discharges its nose at you for %d points of damage!' % \
-            (self.get_name(), damage)
+        self.dmesg = 'The Snotling discharges its nose at you'
 
-class LargeSlug(Monster):
+class LargeSlug(Enemy):
     def __init__(self):
+        Monster.__init__(self)
         self.name = "Giant Slug"
         self.max_hp = 10
         self.attack_damage = '2d3'
@@ -40,11 +46,11 @@ class LargeSlug(Monster):
         self.agility = 10
         self.exp_value = 3
         self.gold = '2d4'
-    def damage_text(self, damage):
-        return 'You slip on a puddle of slime for %d points of damage!' % damage
+        self.dmesg = 'You slip on a puddle of slime'
 
-class Jellyfish(Monster):
+class Jellyfish(Enemy):
     def __init__(self):
+        Monster.__init__(self)
         self.name = "Jelly Fish"
         self.max_hp = 15
         self.attack_damage = '2d4'
@@ -53,22 +59,19 @@ class Jellyfish(Monster):
         self.agility = 8
         self.exp_value = 4
         self.gold = '1d6'
-    def damage_text(self, damage):
-        return 'You are enveloped in stinging tentacles, for %d points of damage' % damage
+        self.dmesg = 'You are enveloped in stinging tentacles,'
 
 class SilverJelly(Jellyfish):
     def __init__(self):
+        Jellyfish.__init__(self)
         self.name = "Silver Jelly"
         self.max_hp = 25
         self.attack_damage = '2d6'
-        self.thaco = 15
-        self.ac = 10
-        self.agility = 8
         self.exp_value = 6
-        self.gold = '1d6'
 
-class Kobold(Monster):
+class Kobold(Enemy):
     def __init__(self):
+        Monster.__init__(self)
         self.name = "Kobold"
         self.max_hp = 10
         self.attack_damage = '4d4'
@@ -77,11 +80,11 @@ class Kobold(Monster):
         self.agility = 14
         self.exp_value = 10
         self.gold = '3d6'
-    def damage_text(self, damage):
-        return 'It slashes with a vicious dagger, for %d points of damage!' % damage
+        self.dmesg = 'It slashes with a vicious dagger,'
 
-class TeenageNinja(Monster):
+class TeenageNinja(Enemy):
     def __init__(self):
+        Monster.__init__(self)
         self.name = "Teenage Ninja Kobold"
         self.max_hp = 10
         self.attack_damage = '4d6'
@@ -90,11 +93,11 @@ class TeenageNinja(Monster):
         self.agility = 18
         self.exp_value = 15
         self.gold = '2d6'
-    def damage_text(self, damage):
-        return 'It uses REAL ULTIMATE NINJA POWER against you for %d points of damage!' % damage
+        self.dmesg = 'It uses REAL ULTIMATE NINJA POWER against you'
     
-class Snakeling(Monster):
+class Snakeling(Enemy):
     def __init__(self):
+        Monster.__init__(self)
         self.name = "Snakeling"
         self.max_hp = 20
         self.attack_damage = '4d4'
@@ -103,11 +106,11 @@ class Snakeling(Monster):
         self.agility = 15
         self.exp_value = 15
         self.gold = '3d6'
-    def damage_text(self, damage):
-        return 'It lashes out for %d points of damage!' % damage
+        self.dmesg = 'It lashes out'
 
-class Guardsman(Monster):
+class Guardsman(Enemy):
     def __init__(self):
+        Monster.__init__(self)
         self.name = "Guardsman"
         self.max_hp = 22
         self.attack_damage = '4d6'
@@ -116,11 +119,11 @@ class Guardsman(Monster):
         self.agility = 18
         self.exp_value = 20
         self.gold = '5d6'
-    def damage_text(self, damage):
-        return 'He slashes at you for %d points of damage.' % damage
+        self.dmesg = 'He slashes at you'
 
-class DarkApprentice(Monster):
+class DarkApprentice(Enemy):
     def __init__(self):
+        Monster.__init__(self)
         self.name = "Dark Apprentice"
         self.max_hp = 25
         self.attack_damage = '4d6'
@@ -129,11 +132,11 @@ class DarkApprentice(Monster):
         self.agility = 20
         self.exp_value = 28
         self.gold = '5d6'
-    def damage_text(self, damage):
-        return 'He slashes at you for %d points of damage.' % damage
+        self.dmesg = 'He slashes at you'
 
-class Henchman(Monster):
+class Henchman(Enemy):
     def __init__(self):
+        Monster.__init__(self)
         self.name = "Henchman"
         self.max_hp = 32
         self.attack_damage = '8d4'
@@ -142,11 +145,11 @@ class Henchman(Monster):
         self.agility = 20
         self.exp_value = 35
         self.gold = '10d6'
-    def damage_text(self, damage):
-        return 'He slashes at you for %d points of damage.' % damage
+        self.dmesg = 'He slashes at you'
 
-class Minotaur(Monster):
+class Minotaur(Enemy):
     def __init__(self):
+        Monster.__init__(self)
         self.name = "The evil Minotaur"
         self.max_hp = 75
         self.attack_damage = '10d6'
@@ -155,7 +158,6 @@ class Minotaur(Monster):
         self.agility = 30
         self.exp_value = 250
         self.gold = '20d20'
-    def damage_text(self, damage):
-        return 'It throws you against the wall for %d points of damage' % damage
+        self.dmesg = 'It throws you against the wall'
 
 register_monsters()

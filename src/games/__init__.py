@@ -1,11 +1,13 @@
 import sys
-import core
+import games
 
-def run(game_name, opts):
+def load(game_name,opts):
+    game = None
+    module = "games.%s" % game_name
     try:
-        exec "import games.%s" % game_name
+        game = __import__(module,None,None,module)
     except ImportError:
         print "%s is not an available game" % game_name
         sys.exit()
-    exec "core.game = games.%s.%s(opts)" % (game_name, game_name)
-    core.game.run()
+    constructor = getattr(game,game_name)
+    return constructor(opts)

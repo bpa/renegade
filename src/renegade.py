@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
-import pygame
-from pygame.locals import *
 import getopt, sys
 import games
+import core
 
 def main():
     opts = {}
@@ -12,7 +11,9 @@ def main():
     opts['debug'] = 0
     opts['fullscreen'] = False
     game = process_args(opts)
-    games.run(game,opts)
+    core.init(opts)
+    core.game = games.load(game,opts)
+    core.game.run()
 
 def process_args(opts):
     try:

@@ -1,18 +1,11 @@
 import os
-import pygame
-import pygame.image
-import pygame.color
-from pygame.sprite import Sprite, RenderPlain
-import pygame.mixer
-
+import core
+from core import Sprite, RenderPlain, Rect
 from util import load_image
 from conf import *
 import util
-import util
-import core
 import events
 import menu
-from conf import *
 from locals import *
 
 SCROLL_EDGE=2
@@ -247,17 +240,17 @@ class MapBase:
         self.map_frames_dirty = [True,True,True,True]
         self.map_frames = []
         self.show_hud = True
-        self.hud_font = pygame.font.Font(None, 20)
-        self.hud_color = pygame.color.Color('#222222')
+        self.hud_font = core.font.Font(None, 20)
+        self.hud_color = core.color.Color('#222222')
         self.hud_rows = 2
         self.heal_points = 0
         self.regen_rate = 2000000000
-        self.sound = pygame.mixer.Sound('%s/sounds/beep.wav' % DATA_DIR)
+        #self.sound = core.mixer.Sound('%s/sounds/beep.wav' % DATA_DIR)
         for f in range(4):
 #TODO Add non hardcoded values for buffer
 #TODO Make sure we don't make a larger surface than we need
 #TODO   Ex: 5x5 map
-            self.map_frames.append(pygame.Surface(((3+width) * TILE_SIZE, \
+            self.map_frames.append(core.Surface(((3+width) * TILE_SIZE, \
                     (3+height) * TILE_SIZE)))
         self.update()
 
@@ -382,7 +375,7 @@ class MapBase:
 
         self.entities.run_command('enter_map')
         # The main event loop for rendering the map
-        clock = pygame.time.Clock()
+        clock = core.time.Clock()
         event_bag = events.EventUtil()
         self.event_bag = event_bag
         iteration = 1
@@ -404,7 +397,7 @@ class MapBase:
             if event_bag.is_action(): self.character_activate()
             self.update()
             self.draw()
-            pygame.display.flip()
+            core.display.flip()
             #I wish there was a better place for this code, but I can't think of any
             if self.character is not None and self.character.entered_tile:
                 self.character.entered_tile = False
@@ -507,7 +500,7 @@ class TileManager(object):
             print "Loading (%s, %s)" % key
             image = util.load_image(TILES_DIR, name).convert()
             if tile_pos is not None:
-                tmp = pygame.Surface( (TILE_SIZE, TILE_SIZE) )
+                tmp = core.Surface( (TILE_SIZE, TILE_SIZE) )
                 rect = Rect(tile_pos[0]*TILE_SIZE, tile_pos[1]*TILE_SIZE,TILE_SIZE,TILE_SIZE)
                 tmp.blit(image, (0,0), rect)
                 image = tmp.convert()
