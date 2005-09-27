@@ -1,4 +1,4 @@
-#! /usr/local/bin/python
+#! /usr/bin/env python
 import unittest
 import os, sys, types
 
@@ -27,6 +27,7 @@ def all():
 os.sys.path.insert(0,'../src')
 os.sys.path.insert(0,'mocks')
 import core
+core.init()
 os.sys.path.remove('mocks')
 os.sys.path.remove('../src')
 unittest.main(defaultTest='all')

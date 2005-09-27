@@ -3,7 +3,7 @@
 import core
 import pygame
 from pygame.locals import *
-from pygame.sprite import Sprite, RenderPlain
+from pygame.sprite import Sprite, RenderPlain, Group
 from pygame import color
 from pygame import display
 from pygame import draw
@@ -16,17 +16,19 @@ from pygame import mouse
 from pygame import Rect
 from pygame import Surface
 from pygame import time
-test_element = 1
+import window_manager
 
+wm = None
 game = None
 screen = None
 
-def init(opts):
+def init(opts={}):
   pygame.init()
-  dimensions = (opts['width'], opts['height'])
+  fullscreen = opts.get('fullscreen',0)
+  height = opts.get('height', 352)
+  width  = opts.get('width',  352)
+  dimensions = (width, height)
   flags = 0
-  if opts['fullscreen']: flags = flags | FULLSCREEN
+  if fullscreen: flags = flags | FULLSCREEN
   core.screen = core.display.set_mode(dimensions, flags)
-
-def run(opts):
-  pass
+  wm = window_manager.Minimal()

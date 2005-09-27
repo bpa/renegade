@@ -1,14 +1,24 @@
-import pygame
+import pygame, core
 from pygame.sprite import Sprite, Group, RenderPlain
 from pygame import image, Rect, color, Surface
-from pygame import USEREVENT, error
-from pygame.locals import RLEACCEL
-screen = pygame.Surface((40,40))
+from pygame import USEREVENT, error, font
+from pygame.locals import *
+from pygame import draw, event, mixer, mouse, time
 import window_manager
 
-class Display:
+screen = None
+game = None
+wm = None
+
+def init(opts={}):
+  height = opts.get('height', 352)
+  width  = opts.get('width',  352)
+  dimensions = (width, height)
+  core.screen = pygame.Surface(dimensions)
+  wm = window_manager.Minimal()
+
+class __Display:
   def flip(self):
     pass
 
-display = Display()
-wm = window_manager.Minimal()
+display = __Display()
