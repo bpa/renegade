@@ -57,8 +57,14 @@ class Minimal(Group):
     for s in self.zorder:
         surface_blit(s.image, s.rect)
 
-  def window(self,width=40,height=40,x=0,y=0,z=0):
+  def window(self,width=None,height=None,x=0,y=0,z=0):
     """Create a new window with size and position in pixels"""
+    if width  == None: width  = core.screen.get_width()
+    if height == None: height = core.screen.get_height()
+    if width  < 1: width  = core.screen.get_width()  + width
+    if height < 1: height = core.screen.get_height() + height
+    if x < 0: x = core.screen.get_width()  + x
+    if y < 0: y = core.screen.get_height() + y
     image = core.Surface((width,height))
     rect = core.Rect(x,y,width,height)
     win = Window(image,rect,z,self)

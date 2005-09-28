@@ -21,6 +21,12 @@ class __Surface:
   def fill(*args):
     pass
 
+  def get_width(*args):
+    return 32
+
+  def get_height(*args):
+    return 32
+
 def init(opts={}):
   core.screen = __Surface()
   wm = window_manager.Minimal()

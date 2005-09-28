@@ -77,3 +77,15 @@ class WMTest(unittest.TestCase):
     self.assertEquals( 0, rect.left)
     self.assertEquals(30, rect.width)
     self.assertEquals(40, rect.height)
+
+  def test_create_window_with_offsets(self):
+    wm = window_manager.Minimal()
+    win = wm.window()
+    self.assertEqual(32,win.image.get_width())
+    self.assertEqual(32,win.image.get_height())
+    win2 = wm.window(-2,-16)
+    self.assertEqual(30,win2.image.get_width())
+    self.assertEqual(16,win2.image.get_height())
+    win3 = wm.window(x=-2,y=-16)
+    self.assertEqual(30,win3.rect.left)
+    self.assertEqual(16,win3.rect.top)
