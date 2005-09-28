@@ -10,15 +10,19 @@ screen = None
 game = None
 wm = None
 
-def init(opts={}):
-  height = opts.get('height', 352)
-  width  = opts.get('width',  352)
-  dimensions = (width, height)
-  core.screen = pygame.Surface(dimensions)
-  wm = window_manager.Minimal()
-
 class __Display:
   def flip(self):
     pass
+
+class __Surface:
+  def blit(*args):
+    pass
+
+  def fill(*args):
+    pass
+
+def init(opts={}):
+  core.screen = __Surface()
+  wm = window_manager.Minimal()
 
 display = __Display()

@@ -24,6 +24,7 @@ def all():
   os.chdir('../src')
   return unittest.TestSuite(tests)
 
+os.chdir(os.path.dirname(__file__))
 os.sys.path.insert(0,'../src')
 os.sys.path.insert(0,'mocks')
 import core
