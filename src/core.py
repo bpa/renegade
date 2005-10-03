@@ -17,12 +17,10 @@ class Mute:
         pass
 
 def init(opts={}):
-    pygame.font.init()
-    pygame.display.init()
-    try:
-        pygame.mixer.init()
+    pygame.init()
+    if pygame.mixer.get_init():
         core.mixer = pygame.mixer
-    except:
+    else:
         core.mixer = Mute()
         
     fullscreen = opts.get('fullscreen',0)

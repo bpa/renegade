@@ -1,6 +1,6 @@
 import core
 import types
-from pygame.sprite import Sprite, Group, RenderPlain
+from pygame.sprite import Sprite, AbstractGroup, RenderPlain
 from pygame.locals import HWSURFACE
 from pygame import color, Surface, Rect
 
@@ -32,9 +32,9 @@ class Window(Sprite):
   def handle_event(self, event):
     pass
 
-class Minimal(Group):
+class Minimal(AbstractGroup):
   def __init__(self):
-    Group.__init__(self)
+    AbstractGroup.__init__(self)
     self.windows = RenderPlain()
     self.zorder = []
     black = color.Color('Black')
@@ -42,7 +42,7 @@ class Minimal(Group):
     core.display.flip()
 
   def add(self, sprite):
-    Group.add(self, sprite)
+    AbstractGroup.add(self, sprite)
     self.sort_by_z()
 
   def sort_by_z(self):
