@@ -68,9 +68,6 @@ class AdventureTown(MapBase):
             "ok, you must be bored", "please leave me alone"))
 
     def walk_in_front_of_dude(self):
-        self.random_fight()
-
-    def old_walk_in_front_of_dude(self):
         choice = dialog.question(
             "I am the wise dude.  What is it you would like to know?",
             [ "What am I supposed to do here?",
@@ -130,7 +127,7 @@ class AdventureTown(MapBase):
                            "provided for you.  All in all, not a bad gig.")
     
     def leave_town(self):
-        core.game.teleport(None, (8,4), None, 'overworld.Overworld')
+        core.game.teleport((8,4), 'overworld.Overworld')
 
     def random_fight(self):
         monster = combat.gallery.generate_monster(1)

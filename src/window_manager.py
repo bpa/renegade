@@ -1,8 +1,11 @@
 import core
-from core import Sprite, Group
+import types
+from pygame.sprite import Sprite, Group, RenderPlain
+from pygame.locals import HWSURFACE
+from pygame import color, Surface, Rect
 
 class Window(Sprite):
-  """Base class for windows.  Must show() before useful.  The update function will be called with a time argument (milliseconds since last call).  Just assign a new function (or lambda) to update and have it draw the image."""
+  """Base class for windows.  Just assign a new function (or lambda) to update and have it draw the image."""
   def __init__(self, image, rect, z, wm):
     Sprite.__init__(self)
     self.image = image
@@ -16,6 +19,10 @@ class Window(Sprite):
   def hide(self):
     self.wm.hide(self)
 
+  def destroy(self):
+    self.kill()
+    self.wm.sort_by_z()
+
   def update(self):
     pass
 
@@ -28,9 +35,9 @@ class Window(Sprite):
 class Minimal(Group):
   def __init__(self):
     Group.__init__(self)
-    self.windows = core.RenderPlain()
+    self.windows = RenderPlain()
     self.zorder = []
-    black = core.color.Color('Black')
+    black = color.Color('Black')
     core.screen.fill(black)
     core.display.flip()
 
@@ -42,7 +49,7 @@ class Minimal(Group):
     zorder = []
     for s in self.spritedict.keys():
       zorder.append(s)
-    zorder.sort(key=lambda sprite: sprite.z)
+    zorder.sort(key=lambda sprite: sprite.z, cmp=lambda a, b: cmp(b,a))
     self.zorder = zorder
 
   def show(self, sprite):
@@ -56,17 +63,38 @@ class Minimal(Group):
     surface_blit = core.screen.blit
     for s in self.zorder:
         surface_blit(s.image, s.rect)
+    core.display.flip()
 
-  def window(self,width=None,height=None,x=0,y=0,z=0):
+  def translate(self, full_size, win_size, position=None):
+    if position == None and win_size.endswith('%'):
+      return full_size * int(win_size[:-1]) / 100
+    if position == 'center':
+      return full_size / 2 - win_size / 2
+    raise SyntaxError('Unknown positional parameter %s' % position)
+
+  def window(self,width=None,height=None,x=0,y=0,z=0,flags=HWSURFACE):
     """Create a new window with size and position in pixels"""
-    if width  == None: width  = core.screen.get_width()
-    if height == None: height = core.screen.get_height()
-    if width  < 1: width  = core.screen.get_width()  + width
-    if height < 1: height = core.screen.get_height() + height
-    if x < 0: x = core.screen.get_width()  + x
-    if y < 0: y = core.screen.get_height() + y
-    image = core.Surface((width,height))
-    rect = core.Rect(x,y,width,height)
+    rect = Rect(0,0,0,0)
+    if type(width) == type(rect):
+      rect = width
+      image = Surface((rect.width,rect.height),flags)
+    else:
+      if width  == None: width  = core.screen.get_width()
+      if height == None: height = core.screen.get_height()
+      if type(width) == types.StringType:
+        width = self.translate(core.screen.get_width(),width)
+      if type(height) == types.StringType:
+        height = self.translate(core.screen.get_height(),height)
+      if width  < 1: width  = core.screen.get_width()  + width
+      if height < 1: height = core.screen.get_height() + height
+      if type(x) == types.StringType:
+        x = self.translate(core.screen.get_width(),width,x)
+      if type(y) == types.StringType:
+        y = self.translate(core.screen.get_height(),height,y)
+      if x < 0: x = core.screen.get_width()  + x
+      if y < 0: y = core.screen.get_height() + y
+      image = Surface((width,height),flags)
+      rect = Rect(x,y,width,height)
     win = Window(image,rect,z,self)
     self.windows.add(win)
     self.add(win)

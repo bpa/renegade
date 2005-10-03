@@ -1,4 +1,4 @@
-from core import USEREVENT
+from pygame import USEREVENT
 
 QUIT_EVENT = USEREVENT + 1
 PUSH_ARROW_EVENT = USEREVENT + 2

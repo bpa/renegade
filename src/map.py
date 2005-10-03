@@ -1,11 +1,13 @@
 import os
 import core
-from core import Sprite, RenderPlain, Rect
+from pygame import Rect, Surface
+from pygame.sprite import Sprite, RenderPlain
 from util import load_image
 from conf import *
 import util
 import events
 import menu
+import dialog
 from locals import *
 
 SCROLL_EDGE=2
@@ -100,8 +102,11 @@ class MapEntity(Sprite):
 
     def next_frame(self):
         self.frame = self.frame + 1
-        if self.frame > 2: self.frame = 0
-        self.image_tile.left = self.image_base_x + (self.frame * TILE_SIZE)
+        if self.frame > 3: self.frame = 0
+        if self.frame == 3:
+          self.image_tile.left = self.image_base_x + (1 * TILE_SIZE)
+        else:
+          self.image_tile.left = self.image_base_x + (self.frame * TILE_SIZE)
 
     def move_to(self, pos):
         """Moves the entity to a location without running triggers
@@ -223,6 +228,7 @@ class MapBase:
         self.character = None
         self.entities = RenderEntity()
         self.non_passable_entities = RenderEntity()
+#TODO Remove SCREEN_SIZE from map and conf, choose size based on screen size
         self.viewport = Rect(0,0,SCREEN_SIZE[0],SCREEN_SIZE[1])
         self.offset = Rect(0,0,0,0)
         self.map_tile_coverage = Rect(0,0,SCREEN_SIZE[0]+5,SCREEN_SIZE[1]+5)
@@ -239,20 +245,15 @@ class MapBase:
         self.frame = 0
         self.map_frames_dirty = [True,True,True,True]
         self.map_frames = []
-        self.show_hud = True
-        self.hud_font = core.font.Font(None, 20)
-        self.hud_color = core.color.Color('#222222')
-        self.hud_rows = 2
         self.heal_points = 0
         self.regen_rate = 2000000000
-        #self.sound = core.mixer.Sound('%s/sounds/beep.wav' % DATA_DIR)
+        self.sound = core.mixer.Sound('%s/sounds/beep.wav' % DATA_DIR)
         for f in range(4):
 #TODO Add non hardcoded values for buffer
 #TODO Make sure we don't make a larger surface than we need
 #TODO   Ex: 5x5 map
-            self.map_frames.append(core.Surface(((3+width) * TILE_SIZE, \
+            self.map_frames.append(Surface(((3+width) * TILE_SIZE, \
                     (3+height) * TILE_SIZE)))
-        self.update()
 
     def dispose(self):
         self.tile_manager.clear()
@@ -316,6 +317,13 @@ class MapBase:
 
     def update(self):
         """Invoked once per cycle of the event loop, to allow animation to update"""
+        if not dialog.running:
+          ebag = core.game.event_bag
+          if ebag.is_left(): self.move_character(WEST)
+          if ebag.is_right(): self.move_character(EAST)
+          if ebag.is_up(): self.move_character(NORTH)
+          if ebag.is_down(): self.move_character(SOUTH)
+          if ebag.is_action(): self.character_activate()
         self.entities.update()
         if self.scrolling:
             axis = self.scroll_axis
@@ -329,27 +337,16 @@ class MapBase:
         if self.map_frames_dirty[self.frame]:
             self.build_current_frame()
             self.map_frames_dirty[self.frame] = False
+        if self.character is not None and self.character.entered_tile:
+            self.character.entered_tile = False
+            self.check_heal()
+            if self.entry_listeners.has_key( self.character.pos ):
+                self.entry_listeners[self.character.pos]()
+            for listener in self.movement_listeners:
+                listener()
+        core.game.screen.image.blit(self.map_frames[self.frame], (0,0), self.offset)
+        self.entities.draw(core.game.screen.image)
 
-    def draw(self):
-        core.screen.blit(self.map_frames[self.frame], (0,0), self.offset)
-        self.entities.draw(core.screen)
-        if self.show_hud:
-            self.draw_hud()
-
-    def draw_hud(self):
-        hero = core.game.save_data.hero
-        text = "HP: %d/%d  Exp: %d  Level: %d" % \
-                (hero.get_hp(), hero.get_max_hp(), hero.get_exp(), hero.get_level())
-        self.draw_hud_text(text, 2)
-        text = "Gold: %d  Weapon: %s  Armor: %s" % \
-            (hero.get_gold(), hero.weapon.get_name(), hero.armor.get_name())
-        self.draw_hud_text(text, 1)
-
-    def draw_hud_text(self, text, row):
-        rendered = self.hud_font.render(text, True, self.hud_color).convert_alpha()
-        base = core.screen.get_rect().height
-        core.screen.blit(rendered, (0, base - row*self.hud_font.get_height()))
-        
     def build_current_frame(self):
 #TODO Decide if map_tile_coverage is the right name for this
         blit = self.map_frames[self.frame].blit
@@ -366,50 +363,14 @@ class MapBase:
             x = x + TILE_SIZE
             y = 0
 
-    def clear_key_state(self):
-        self.event_bag.clear()
-
-    def run(self):
-        self.offset.width = core.screen.get_rect().width
-        self.offset.height = core.screen.get_rect().height
-
+    def init(self):
+        self.offset.width = core.game.screen.image.get_rect().width
+        self.offset.height = core.game.screen.image.get_rect().height
         self.entities.run_command('enter_map')
-        # The main event loop for rendering the map
-        clock = core.time.Clock()
-        event_bag = events.EventUtil()
-        self.event_bag = event_bag
-        iteration = 1
-        while self.running:
-            clock.tick(20)
-        
-            for event in event_bag.process_sdl_events():
-                if event.type == QUIT_EVENT:
-                    core.game.running = False
-                    self.dispose()
-                    return
-                elif event.type == PUSH_ACTION2_EVENT:
-                    menu.run_main_menu()
-            
-            if event_bag.is_left(): self.move_character(WEST)
-            if event_bag.is_right(): self.move_character(EAST)
-            if event_bag.is_up(): self.move_character(NORTH)
-            if event_bag.is_down(): self.move_character(SOUTH)
-            if event_bag.is_action(): self.character_activate()
-            self.update()
-            self.draw()
-            core.display.flip()
-            #I wish there was a better place for this code, but I can't think of any
-            if self.character is not None and self.character.entered_tile:
-                self.character.entered_tile = False
-                self.check_heal()
-                # See if there is a listener on entry to this square
-                if self.entry_listeners.has_key( self.character.pos ):
-                    self.entry_listeners[self.character.pos]()
-                    if not self.running: break
-                for listener in self.movement_listeners:
-                    listener()
-        self.dispose()
-        return
+
+    def handle_event(self,event):
+        if event.type == PUSH_ACTION2_EVENT:
+            menu.run_main_menu()
 
     def check_heal(self):
         self.heal_points = self.heal_points + 1
@@ -473,7 +434,7 @@ class MapBase:
                         if e.can_trigger_actions: character.touch()
                 return 0
             else:
-                #self.sound.play()
+                self.sound.play()
                 return 1
         else:
             return 0
@@ -497,10 +458,10 @@ class TileManager(object):
     def get_tile(self, name, colorkey=None, tile_pos=None):
         key = (name, tile_pos)
         if not self.tiles.has_key( key ):
-            print "Loading (%s, %s)" % key
+            image = util.load_image(TILES_DIR, name)
             image = util.load_image(TILES_DIR, name).convert()
             if tile_pos is not None:
-                tmp = core.Surface( (TILE_SIZE, TILE_SIZE) )
+                tmp = Surface( (TILE_SIZE, TILE_SIZE) )
                 rect = Rect(tile_pos[0]*TILE_SIZE, tile_pos[1]*TILE_SIZE,TILE_SIZE,TILE_SIZE)
                 tmp.blit(image, (0,0), rect)
                 image = tmp.convert()

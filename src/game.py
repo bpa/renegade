@@ -1,20 +1,27 @@
 import os, pickle
 from conf import *
-import core
+import core, events
+from pygame import mouse, font, time
+from locals import *
+import hud
 
 # Global reference to the currently loaded save data
-save_data = None
+#save_data = None
 
 class SaveGameObject:
     def __init__(self):
         pass
 
 class Game:
-    def __init__(self, opts):
-        self.opts = opts
+    def __init__(self):
         self.name = "Renegade game"
         self.save_data = SaveGameObject()
-        self.new_game(opts)
+        self.screen = core.wm.window(z=10)
+        self.new_game()
+        self.hud = hud.HUD(self.save_data.hero)
+
+    def new_game(self):
+        pass
 
     def load_map(self,map_name):
         """Loads a map by name.  This should always have a module.
@@ -36,33 +43,45 @@ class Game:
         global save_data
         save_data = self.save_data
         core.display.set_caption(self.name)
-        core.mouse.set_visible(0)
+        mouse.set_visible(0)
 
-        if not core.font:
+        if not font:
             print 'Unable to initialize font subsystem'
             exit
 
         print "Running map..."
+        self.save_data.map.init()
+        clock = time.Clock()
+        event_bag = events.EventUtil()
+        self.event_bag = event_bag
+        iteration = 1
         self.running = True
         while self.running:
-            ret = self.save_data.map.run()
-            print "Map completed with return value: ", ret
+            for event in event_bag.process_sdl_events():
+                if event.type == QUIT_EVENT:
+                  core.game.running = False
+                  self.save_data.map.dispose()
+                  return
+                else:
+                  self.save_data.map.handle_event(event)
+            self.save_data.map.update()
+            core.wm.update()
+            core.wm.draw()
+            clock.tick(20)
 
-    def teleport(self, effect, loc, dir=None, map_name=None):
-        """Teleports the character to a new location using an optional
-           effect.  If a map is specified, the current map will be changed,
-           if not, the character will just be moved to the location on the
-           current map"""
+    def clear_key_state(self):
+        self.event_bag.clear()
+
+    def teleport(self, loc, map_name=None, dir=None):
+        """Teleports the character to a new location.  If a map is specified,
+           the current map will be changed, if not, the character will just be
+           moved to the location on the current map"""
         if dir is None:
             dir = self.save_data.map.character.facing
-        if effect is not None:
-            pass
         if map_name is not None:
             dude = self.save_data.map.character
-            self.save_data.map.running = False
+            self.save_data.map.dispose()
             self.load_map(map_name)
+            self.save_data.map.init()
         self.save_data.map.place_character(dude, loc, False, dir )
         self.save_data.map.update()
-        self.save_data.map.draw()
-        if effect is not None:
-            pass

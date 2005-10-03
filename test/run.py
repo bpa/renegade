@@ -27,7 +27,7 @@ def all():
 os.chdir(os.path.dirname(__file__))
 os.sys.path.insert(0,'../src')
 os.sys.path.insert(0,'mocks')
-import core
+import core, util
 core.init()
 os.sys.path.remove('mocks')
 os.sys.path.remove('../src')

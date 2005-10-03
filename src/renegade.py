@@ -12,7 +12,7 @@ def main():
     opts['fullscreen'] = False
     game = process_args(opts)
     core.init(opts)
-    core.game = games.load(game,opts)
+    core.game = games.load(game)
     core.game.run()
 
 def process_args(opts):
@@ -36,7 +36,7 @@ def process_args(opts):
     return args[0]
 
 def print_usage_and_exit():
-    print "Usage: renegade.py [-h] [-d debug level] [-g WIDTHxHEIGHT] game"
+    print "Usage: renegade.py [-hf] [-d debug level] [-g WIDTHxHEIGHT] game"
     sys.exit(2)
 
 main()

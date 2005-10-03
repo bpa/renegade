@@ -1,52 +1,126 @@
 import re
 import events
 import core
+import pygame
+from pygame import image, Rect, draw
+from pygame.locals import RLEACCEL
+import dialog
+from math import pi
 from locals import *
+
+img = image.load("../data/edges-16x4.tga")
+colorkey = img.get_at((0,0))
+img.set_colorkey(colorkey, RLEACCEL)
+dialog.circle_border_image = img
+dialog.running = False
 
 def message(text):
     d = Dialog(text)
-    screen = core.display.get_surface()
-    d.run(screen)
-    core.game.save_data.map.clear_key_state()
+    d.run()
+    core.game.clear_key_state()
 
 def question(text, options):
     d = Dialog(text, options[:])
-    screen = core.display.get_surface()
-    ret = d.run(screen)
-    core.game.save_data.map.clear_key_state()
+    ret = d.run()
+    core.game.clear_key_state()
     return ret
+
+def draw_round_border(surface, width=4, color=None):
+    h = surface.get_height()
+    w = surface.get_width()
+    img = dialog.circle_border_image
+    if color == None: color = pygame.color.Color("white")
+
+    r = Rect(0,0,8,8)
+    surface.blit(img, (0,0), r)
+    r.top = 8
+    surface.blit(img, (0,h-8), r)
+    r.left = 8
+    surface.blit(img, (w-8,h-8), r)
+    r.top = 0
+    surface.blit(img, (w-8,0), r)
+    
+    x1 = y1 = 2 * width
+    x2 = w - x1 - 1
+    y2 = h - y1 - 1
+    bottom = h - width + 1
+    right  = w - width + 1
+    draw.line(surface, color, (x1,0),(x2,0),4 )
+    draw.line(surface, color, (0,y1),(0,y2),4 )
+    draw.line(surface, color, (x1,bottom),(x2,bottom),4 )
+    draw.line(surface, color, (right,y1),(right,y2),4 )
 
 class Dialog(object):
 
     def __init__(self, text, options=None):
-        self.font = core.font.Font(None, 20)
-        self.text = text
         self.options = options
         if options is not None:
             self.selection = 0
         else:
             self.selection = None
 
-    def draw(self, screen):
-        screen.fill(self.fill_color, self.rect)
+        self.fg = pygame.color.Color('white')
+        self.bg = pygame.color.Color('blue')
+        self.tr = pygame.color.Color('black')
+
+        half = core.screen.get_width() * 4 / 5
+        self.rect = Rect(0,0,half,0)
+        self.text = text
+        self.font = pygame.font.Font(None, 20)
+        self.split_text()
+        self.render_text()
+
+        self.window = core.wm.window(half,self.rect.height,'center','center')
+        self.window.update = self.update
+        self.screen = self.window.image
+        self.screen.set_colorkey(self.tr, RLEACCEL)
+
+        self.rect = Rect(self.window.rect)
+        self.rect.center = self.screen.get_rect().center
+
+        r = self.rect.inflate(-6,-6)
+        self.bgwin = core.wm.window(r.width,r.height,'center','center',z=3)
+        self.bgwin.image.fill(self.bg)
+        self.bgwin.image.set_alpha(100)
+
+        self.borderwin = core.wm.window(self.rect.width,self.rect.height, \
+            'center','center', z=2)
+        self.borderwin.image.fill(self.tr)
+        dialog.draw_round_border(self.borderwin.image,color=self.fg)
+        self.borderwin.image.set_colorkey(self.tr, RLEACCEL)
+
+    def __del__(self):
+        print "Bye"
+        self.window.destroy()
+        self.bgwin.destroy()
+        self.borderwin.destroy()
+
+    def hide(self):
+        self.window.hide()
+        #self.bgwin.hide()
+        ##self.borderwin.hide()
+
+    def update(self):
+        self.screen.fill(self.tr)
+        draw_round_border(self.screen,color=self.fg)
         current_y = 10
         for line in self.rendered:
-            screen.blit(line, self.rect.move(10,current_y))
+            self.screen.blit(line, self.rect.move(10,current_y))
             current_y = current_y + self.font.get_linesize()
         current_y = current_y + self.font.get_linesize()
         first_option_y = current_y
         for option in self.rendered_opts:
-            screen.blit(option, self.rect.move(20,current_y))
+            self.screen.blit(option, self.rect.move(20,current_y))
             current_y = current_y + self.font.get_linesize()
         if self.selection is not None:
             y_pos = first_option_y + self.selection * self.font.get_linesize()
             y_pos = y_pos + self.font.get_linesize() / 2 # Center it in line
             rect = self.rect.move(10, y_pos)
             center = (rect.left, rect.top)
-            core.draw.circle(screen, self.text_color, center, 5)
+            draw.circle(self.screen, self.fg, center, 5)
 
     def render_one_line(self, line):
-        return self.font.render(line, True, self.text_color).convert_alpha()
+        return self.font.render(line, True, self.fg).convert_alpha()
 
     def render_text(self):
         self.rendered = map(self.render_one_line, self.lines)
@@ -79,32 +153,15 @@ class Dialog(object):
         if self.selection is not None and self.selection < len(self.options)-1:
             self.selection = self.selection + 1
 
-    def run(self, screen):
-
-        # Calculate the size of the dialog
-        self.rect = core.Rect(0,0,0,0)
-        self.rect.width = int(screen.get_width() * 0.7)
-
-        # Precalculate some stuff
-        self.fill_color = core.color.Color('blue')
-        self.text_color = core.color.Color('white')
-        self.split_text()
-        self.render_text()
-        self.rect.center = screen.get_rect().center
-
-        # Save off a copy of the screen that I'm about to overwrite
-        #screen_copy = screen.copy()
-        #copy doesn't appear to exist on FreeBSD or Windows
-        screen_copy = core.Surface(screen.get_size())
-        screen_copy.blit(screen,(0,0))
-    
-        clock = core.time.Clock()
-        event_bag = events.EventUtil()
+    def run(self):
+        self.window.show()
+        dialog.running = True
+        clock = pygame.time.Clock()
+        event_bag = core.game.event_bag
         while True:
             for event in event_bag.process_sdl_events():
                 if event.type == QUIT_EVENT and self.selection is None:
                     self.dispose()
-                    screen.blit(screen_copy, (0,0))
                     return None
                 elif event.type == PUSH_ARROW_EVENT or \
                      event.type == REPEAT_ARROW_EVENT:
@@ -114,15 +171,19 @@ class Dialog(object):
                         self.selection_down()
                 elif event.type == PUSH_ACTION_EVENT:
                     self.dispose()
-                    screen.blit(screen_copy, (0,0))
                     if self.selection is not None:
                         #return self.options[self.selection]
                         return self.selection
                     else: return None
             
-            self.draw(screen)
-            core.display.flip()
+            core.game.save_data.map.update()
+            core.wm.update()
+            core.wm.draw()
             clock.tick(20)
 
     def dispose(self):
+        dialog.running = False
         self.rendered = None
+        self.window.destroy()
+        self.bgwin.destroy()
+        self.borderwin.destroy()

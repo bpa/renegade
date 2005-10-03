@@ -10,7 +10,7 @@ except ImportError, detail:
     print "Import error:", detail
 
 class hacknslash(Game):
-    def new_game(self,opts):
+    def new_game(self):
         hero = characters.Hero()
         self.save_data.hero = hero
         hero.equip_weapon( items.Hands() )

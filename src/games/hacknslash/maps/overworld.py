@@ -35,10 +35,10 @@ class Overworld(MapBase):
         if self.character.facing == SOUTH:
             self.character.face(WEST)
         if self.character.facing == WEST:
-            core.game.teleport(None, (10,8), None, 'town.AdventureTown')
+            core.game.teleport((10,8), 'town.AdventureTown')
         else:
-            core.game.teleport(None, ( 0,8), None, 'town.AdventureTown')
+            core.game.teleport(( 0,8), 'town.AdventureTown')
 
     def enter_cave(self):
-        core.game.teleport(None, (5,9), None, 'cave.Cave')
+        core.game.teleport((5,9), 'cave.Cave')
 

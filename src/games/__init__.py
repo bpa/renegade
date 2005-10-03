@@ -1,7 +1,7 @@
 import sys
 import games
 
-def load(game_name,opts):
+def load(game_name):
     game = None
     module = "games.%s" % game_name
     try:
@@ -10,4 +10,4 @@ def load(game_name,opts):
         print "%s is not an available game" % game_name
         sys.exit()
     constructor = getattr(game,game_name)
-    return constructor(opts)
+    return constructor()

@@ -1,5 +1,6 @@
 import os
-from core import image, RLEACCEL, error
+from pygame import image, error
+from pygame.locals import RLEACCEL
 
 cached_images = {}
 

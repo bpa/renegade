@@ -1,6 +1,7 @@
 import dialog
 import dice
 import util
+from observing import Observable
 from conf import *
 from map import MapEntity
 
@@ -84,7 +85,7 @@ class Monster(Character):
         return 'The %s hits you for %d points of damage!' % \
             (self.get_name(), damage)
 
-class Hero(Character):
+class Hero(Observable, Character):
     def __init__(self):
         Character.__init__(self)
         self.inventory = []
@@ -103,6 +104,9 @@ class Hero(Character):
         self.gold = self.gold + amount
 
     def regenerate(self):
+        #Being observable, we don't want to change variables
+        #just to change them back
+        if self.hp == self.max_hp: return
         self.hp = self.hp + int(0.05 * self.max_hp)
         if self.hp > self.max_hp: self.hp = self.max_hp
 

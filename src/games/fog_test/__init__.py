@@ -11,11 +11,10 @@ except ImportError, detail:
     print "Import error:", detail
 
 class fog_test(RPG):
-    def __init__(self,opts):
-        RPG.__init__(self,opts)
+    def __init__(self):
         monsters.register_packs()
 
-    def new_game(self,opts):
+    def new_game(self):
         self.init_character()
         self.save_data.map = StoneWall()
         #self.save_data.character = characters.Character('dude_map')

@@ -42,6 +42,8 @@ class Cave(MapBase):
             if self.character.facing == direction:
                 self.monster_level = self.monster_level + 1
             else: self.monster_level = self.monster_level - 1
+            if self.monster_level < 1: self.monster_level = 1
+            if self.monster_level > 20: self.monster_level = 20
         return temp
            
     def movement(self):

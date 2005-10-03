@@ -1,9 +1,4 @@
 import pygame, core
-from pygame.sprite import Sprite, Group, RenderPlain
-from pygame import image, Rect, color, Surface
-from pygame import USEREVENT, error, font
-from pygame.locals import *
-from pygame import draw, event, mixer, mouse, time
 import window_manager
 
 screen = None
@@ -27,7 +22,15 @@ class __Surface:
   def get_height(*args):
     return 32
 
+class Mute:
+    def Sound(self,file):
+        return Mute()
+    def play(self):
+        pass
+
 def init(opts={}):
+  pygame.display.init()
+  core.mixer = Mute()
   core.screen = __Surface()
   wm = window_manager.Minimal()
 
