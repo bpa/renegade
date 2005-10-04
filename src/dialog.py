@@ -90,17 +90,18 @@ class Dialog(object):
         self.borderwin.image.set_colorkey(self.tr, RLEACCEL)
 
     def __del__(self):
-        print "Bye"
         self.window.destroy()
         self.bgwin.destroy()
         self.borderwin.destroy()
 
     def hide(self):
         self.window.hide()
-        #self.bgwin.hide()
-        ##self.borderwin.hide()
+        self.bgwin.hide()
+        self.borderwin.hide()
 
+    def nop(self): pass
     def update(self):
+        self.window.update = self.nop
         self.screen.fill(self.tr)
         draw_round_border(self.screen,color=self.fg)
         current_y = 10
@@ -148,10 +149,12 @@ class Dialog(object):
     def selection_up(self):
         if self.selection is not None and self.selection > 0:
             self.selection = self.selection - 1
+        self.window.update = self.update
 
     def selection_down(self):
         if self.selection is not None and self.selection < len(self.options)-1:
             self.selection = self.selection + 1
+        self.window.update = self.update
 
     def run(self):
         self.window.show()
