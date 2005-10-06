@@ -225,13 +225,14 @@ class MapBase:
                 col.append(location)
         self.width = width
         self.height = height
+        self.dimentions = Rect(0,0,width,height)
         self.character = None
         self.entities = RenderEntity()
         self.non_passable_entities = RenderEntity()
 #TODO Remove SCREEN_SIZE from map and conf, choose size based on screen size
         self.viewport = Rect(0,0,SCREEN_SIZE[0],SCREEN_SIZE[1])
         self.offset = Rect(0,0,0,0)
-        self.map_tile_coverage = Rect(0,0,SCREEN_SIZE[0]+5,SCREEN_SIZE[1]+5)
+        self.map_tile_coverage = Rect(0,0,SCREEN_SIZE[0]+8,SCREEN_SIZE[1]+7)
         if self.map_tile_coverage.width > width:
             self.map_tile_coverage.width = width
         if self.map_tile_coverage.height > height:
@@ -268,21 +269,14 @@ class MapBase:
         except:
             return None
     
-    def calculate_tile_coverage(self, viewable_region):
+    def calculate_tile_coverage(self, viewable):
         if self.character is None:
             return
-#TODO Make sure there isn't more tile coverage than map on small maps
-        self.map_tile_coverage.center = self.character.pos
-        if self.map_tile_coverage.left < 0: self.map_tile_coverage.left = 0
-        if self.map_tile_coverage.right > self.width:
-            self.map_tile_coverage.right = self.width
-        if self.map_tile_coverage.top < 0: self.map_tile_coverage.top = 0
-        if self.map_tile_coverage.bottom > self.height:
-            self.map_tile_coverage.bottom = self.height
-        self.offset.left = \
-                (viewable_region.left - self.map_tile_coverage.left) * TILE_SIZE
-        self.offset.top = \
-                (viewable_region.top - self.map_tile_coverage.top) * TILE_SIZE
+        coverage = self.map_tile_coverage
+        coverage.center = self.character.pos
+        coverage.clamp_ip(self.dimentions)
+        self.offset.left = (viewable.left - coverage.left) * TILE_SIZE
+        self.offset.top  = (viewable.top  - coverage.top ) * TILE_SIZE
         if not self.map_non_scroll_region.collidepoint(self.character.pos):
             self.map_non_scroll_region = \
                    self.viewport.inflate(SCROLL_EDGE*-2,SCROLL_EDGE*-2)
@@ -323,7 +317,6 @@ class MapBase:
           if ebag.is_right(): self.move_character(EAST)
           if ebag.is_up(): self.move_character(NORTH)
           if ebag.is_down(): self.move_character(SOUTH)
-          if ebag.is_action(): self.character_activate()
         self.entities.update()
         if self.scrolling:
             axis = self.scroll_axis
@@ -369,8 +362,8 @@ class MapBase:
         self.entities.run_command('enter_map')
 
     def handle_event(self,event):
-        if event.type == PUSH_ACTION2_EVENT:
-            menu.run_main_menu()
+        if event.type == PUSH_ACTION_EVENT: self.character_activate()
+        if event.type == PUSH_ACTION2_EVENT: menu.run_main_menu()
 
     def check_heal(self):
         self.heal_points = self.heal_points + 1

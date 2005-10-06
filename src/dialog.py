@@ -17,12 +17,10 @@ dialog.running = False
 def message(text):
     d = Dialog(text)
     d.run()
-    core.game.clear_key_state()
 
 def question(text, options):
     d = Dialog(text, options[:])
     ret = d.run()
-    core.game.clear_key_state()
     return ret
 
 def draw_round_border(surface, width=4, color=None):
@@ -147,19 +145,25 @@ class Dialog(object):
             self.lines.append(current)
 
     def selection_up(self):
-        if self.selection is not None and self.selection > 0:
-            self.selection = self.selection - 1
+        if self.selection is not None:
+            if self.selection == 0:
+              self.selection = len(self.options)-1
+            else:
+              self.selection = self.selection - 1
         self.window.update = self.update
 
     def selection_down(self):
-        if self.selection is not None and self.selection < len(self.options)-1:
-            self.selection = self.selection + 1
+        if self.selection is not None:
+            if self.selection < len(self.options)-1:
+                self.selection = self.selection + 1
+            else:
+              self.selection = 0
         self.window.update = self.update
 
     def run(self):
         self.window.show()
         dialog.running = True
-        clock = pygame.time.Clock()
+        clock = core.clock
         event_bag = core.game.event_bag
         while True:
             for event in event_bag.process_sdl_events():
@@ -182,7 +186,6 @@ class Dialog(object):
             core.game.save_data.map.update()
             core.wm.update()
             core.wm.draw()
-            clock.tick(20)
 
     def dispose(self):
         dialog.running = False

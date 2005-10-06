@@ -9,6 +9,7 @@ wm = None
 game = None
 screen = None
 mixer = None
+clock = pygame.time.Clock()
 
 class Mute:
     def Sound(self,file):

@@ -13,8 +13,8 @@ class Character(object):
       self.strength = 10
       self.agility = 10
       self.vitality = 10
-      self.weapon = Weapon()
-      self.armor = Armor()
+      self.weapon = Weapon('None','1d1',0)
+      self.armor = Armor('None',0,0)
       self.gold = 0
       self.recalculate()
 
@@ -140,26 +140,30 @@ class Hero(Observable, Character):
 class Item(object):
     def __init__(self):
         self.name = 'UNNAMED ITEM'
-        self.value = 0
+        self.cost = 0
 
     def get_name(self):
         return self.name
 
     def get_value(self):
-        return self.value
+        return self.cost
 
 class Weapon(Item):
-    def __init__(self):
+    def __init__(self,name,damage,cost):
         Item.__init__(self)
-        self.damage = '1d1'
+        self.name = name
+        self.damage = damage
+        self.cost = cost
 
     def get_damage(self):
         return dice.roll(self.damage)
     
 class Armor(Item):
-    def __init__(self):
+    def __init__(self, name, rating, cost):
         Item.__init__(self)
-        self.rating = 0
+        self.name = name
+        self.rating = rating
+        self.cost = cost
 
     def get_rating(self):
         return self.rating

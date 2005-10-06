@@ -13,8 +13,8 @@ class hacknslash(Game):
     def new_game(self):
         hero = characters.Hero()
         self.save_data.hero = hero
-        hero.equip_weapon( items.Hands() )
-        hero.equip_armor( items.Skin() )
+        hero.equip_weapon( items.Hands )
+        hero.equip_armor( items.Skin )
         hero.add_gold(150)
         self.load_map('town.AdventureTown')
         self.save_data.character = map.MapEntity()

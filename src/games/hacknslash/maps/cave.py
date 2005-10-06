@@ -8,7 +8,10 @@ class Cave(MapBase):
         MapBase.__init__(self,55,44)
         self.set_regen_rate(5)
         self.get_tiles_from_ascii(self.__ascii_art(), {
-            ' ': ('stone',), '.': ('floor',), '+': ('cave',),'@': ('grass',),
+            ' ': ('stone',),
+            '.': ('floor',),
+            '+': ('cave',),
+            '@': ('grass',),
             '0': ('dirt',),
             'walkable': '.+@0' })
         self.add_entry_listener(5,9, self.exit_cave)
@@ -52,7 +55,7 @@ class Cave(MapBase):
             self.random_fight()
     
     def exit_cave(self):
-        core.game.teleport(None, (8,1), None, 'overworld.Overworld')
+        core.game.teleport((8,1), 'overworld.Overworld')
 
     def fight_minotaur(self):
         monster = combat.gallery.get_monster('The evil Minotaur')

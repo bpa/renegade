@@ -33,7 +33,7 @@ class Merchant(MapEntity):
                 return
             item = self.item_list[choice]
             hero = game.save_data.hero
-            if item.value <= hero.get_gold():
+            if item.cost <= hero.get_gold():
                 hero.add_gold( -item.get_value() )
                 self.purchased(item)
             else:

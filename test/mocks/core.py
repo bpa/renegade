@@ -22,6 +22,12 @@ class __Surface:
   def get_height(*args):
     return 32
 
+class __clock:
+  def get_fps(self): return 20.0
+  def get_time(self): return 45.0
+  def get_rawtime(self): return 5
+  def tick(self, time=0): pass
+
 class Mute:
     def Sound(self,file):
         return Mute()
@@ -35,3 +41,4 @@ def init(opts={}):
   wm = window_manager.Minimal()
 
 display = __Display()
+clock = __clock()

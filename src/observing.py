@@ -15,7 +15,9 @@ class Observable:
 
   def handle_observation(self, obj, field, old, new):
     tb = traceback.extract_stack(None,3)[0]
-    watch = "Watch for %s" % str(self.__class__).split("'")[1]
+    type = str(self.__class__)
+    if type.find("'") != -1: type = type.split("'")[1]
+    watch = "Watch for %s" % type
     print watch.center(len(watch)+2).center(78,'*')
     print "%s line %s:" % (tb[0], tb[1])
     print tb[3]

@@ -51,7 +51,7 @@ class Game:
 
         print "Running map..."
         self.save_data.map.init()
-        clock = time.Clock()
+        clock = core.clock
         event_bag = events.EventUtil()
         self.event_bag = event_bag
         iteration = 1
@@ -67,10 +67,6 @@ class Game:
             self.save_data.map.update()
             core.wm.update()
             core.wm.draw()
-            clock.tick(20)
-
-    def clear_key_state(self):
-        self.event_bag.clear()
 
     def teleport(self, loc, map_name=None, dir=None):
         """Teleports the character to a new location.  If a map is specified,
