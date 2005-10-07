@@ -1,7 +1,11 @@
 import core
 import types
 import pygame
-from pygame.sprite import Sprite, Group as AbstractGroup, RenderPlain
+from pygame.sprite import Sprite, RenderPlain
+try:
+    from pygame.sprite import AbstractGroup
+except:
+    from pygame.sprite import Group as AbstractGroup
 from pygame.locals import HWSURFACE
 from pygame import color, Surface, Rect, font
 
