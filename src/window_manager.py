@@ -13,13 +13,25 @@ pygame.font.init()
 __f = font.Font(None, 16).render
 __y = color.Color("yellow")
 
+fps_win = None
+fps_color = color.Color("black")
+
+def init_fps_win():
+    global fps_win, fps_color
+    fps_win = Surface((165,35), HWSURFACE)
+    fps_win.set_alpha(180)
+
 def print_fps():
+    global fps_win, fps_color
+    if fps_win == None: init_fps_win()
     c = core.clock
-    b = core.screen.blit
-    
+    #b = core.screen.blit
+    b = fps_win.blit
+    fps_win.fill(fps_color)
     b(__f("FPS: %.1f" % c.get_fps(),True,__y), (5,0))
     b(__f("Render Time: %ims" % c.get_rawtime(),True,__y), (5,10))
     b(__f("Time between frames: %ims" % c.get_time(),True,__y), (5,20))
+    core.screen.blit(fps_win, (5,0))
 
 class Window(Sprite):
   """Base class for windows.  Just assign a new function (or lambda) to update and have it draw the image."""
