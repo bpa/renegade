@@ -275,7 +275,7 @@ class MapBase:
             return
         coverage = self.map_tile_coverage
         coverage.center = self.character.pos
-        view_scroll = viewable.inflate(2,2)
+        view_scroll = viewable.inflate(8,8)
         coverage.clamp_ip(view_scroll)
         coverage.clamp_ip(self.dimentions)
         self.offset.left = (viewable.left - coverage.left) * TILE_SIZE

@@ -10,7 +10,7 @@ class MapTest(unittest.TestCase):
 
   def tearDown(self):
     core.screen.width = 32
-    core.screen.width = 32
+    core.screen.height = 32
 
   def test_init(self):
     m = map.MapBase(50,50)
