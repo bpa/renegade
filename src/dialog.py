@@ -79,7 +79,7 @@ class Dialog(object):
         r = self.rect.inflate(-6,-6)
         self.bgwin = core.wm.window(r.width,r.height,'center','center',z=3)
         self.bgwin.image.fill(self.bg)
-        self.bgwin.image.set_alpha(100)
+        self.bgwin.image.set_alpha(180)
 
         self.borderwin = core.wm.window(self.rect.width,self.rect.height, \
             'center','center', z=2)
