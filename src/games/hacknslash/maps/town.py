@@ -54,10 +54,13 @@ class AdventureTown(MapBase):
         sprite.face(SOUTH)
         sprite.always_animate = True
         sprite.animation_speed = 18
-        self.add_entry_listener(9,2, self.walk_in_front_of_dude)
+        sprite.activate = self.walk_in_front_of_dude
+
+        # Exit points
         self.add_entry_listener(0,8, self.leave_town)
         self.add_entry_listener(10,8, self.leave_town)
 
+        # Random townsfolk
         tp = NPC.Townsperson()
         tp.init('m05', 0, 1, -1)
         self.place_entity(tp, (7,7) )
