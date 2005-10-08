@@ -66,8 +66,11 @@ class Minimal(AbstractGroup):
     zorder = []
     for s in self.spritedict.keys():
       zorder.append(s)
-    zorder.sort(key=lambda sprite: sprite.z, cmp=lambda a, b: cmp(b,a))
+    zorder.sort(self.reverse_z_sort_sprites)
     self.zorder = zorder
+
+  def reverse_z_sort_sprites(self, a, b):
+  	return cmp(b.z, a.z)
 
   def show(self, sprite):
     self.add(sprite)
