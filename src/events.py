@@ -10,6 +10,7 @@ class EventUtil:
     def __init__(self):
         self.clock = core.clock
         self.keys_pressed = pygame.key.get_pressed()
+	pygame.key.set_repeat(200, 200)
 
     def is_left(self):
         return self.keys_pressed[K_LEFT]
