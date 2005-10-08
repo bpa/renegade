@@ -10,17 +10,21 @@ class __Display:
     pass
 
 class __Surface:
+  def __init__(self):
+    self.width = 32
+    self.height = 32
+
   def blit(*args):
     pass
 
   def fill(*args):
     pass
 
-  def get_width(*args):
-    return 32
+  def get_width(self, *args):
+    return self.width
 
-  def get_height(*args):
-    return 32
+  def get_height(self, *args):
+    return self.height
 
 class __clock:
   def get_fps(self): return 20.0

@@ -225,14 +225,15 @@ class MapBase:
                 col.append(location)
         self.width = width
         self.height = height
+        tiles_x = core.screen.get_width() / 32
+        tiles_y = core.screen.get_height() / 32
         self.dimentions = Rect(0,0,width,height)
         self.character = None
         self.entities = RenderEntity()
         self.non_passable_entities = RenderEntity()
-#TODO Remove SCREEN_SIZE from map and conf, choose size based on screen size
-        self.viewport = Rect(0,0,SCREEN_SIZE[0],SCREEN_SIZE[1])
+        self.viewport = Rect(0,0,tiles_x,tiles_y)
         self.offset = Rect(0,0,0,0)
-        self.map_tile_coverage = Rect(0,0,SCREEN_SIZE[0]+8,SCREEN_SIZE[1]+7)
+        self.map_tile_coverage = Rect(0,0,tiles_x+5,tiles_y+5)
         if self.map_tile_coverage.width > width:
             self.map_tile_coverage.width = width
         if self.map_tile_coverage.height > height:
@@ -274,6 +275,8 @@ class MapBase:
             return
         coverage = self.map_tile_coverage
         coverage.center = self.character.pos
+        view_scroll = viewable.inflate(2,2)
+        coverage.clamp_ip(view_scroll)
         coverage.clamp_ip(self.dimentions)
         self.offset.left = (viewable.left - coverage.left) * TILE_SIZE
         self.offset.top  = (viewable.top  - coverage.top ) * TILE_SIZE
