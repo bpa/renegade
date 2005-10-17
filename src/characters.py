@@ -4,6 +4,7 @@ import util
 from observing import Observable
 from conf import *
 from map import MapEntity
+from items import Weapon, Armor
 
 class Character(object):
     def __init__(self):
@@ -136,34 +137,3 @@ class Hero(Observable, Character):
         text = 'You have advanced to level %d.  Your %s has increased to %d.'
         dialog.message(text % (self.level, message, new_val))
         self.recalculate()
-
-class Item(object):
-    def __init__(self):
-        self.name = 'UNNAMED ITEM'
-        self.cost = 0
-
-    def get_name(self):
-        return self.name
-
-    def get_value(self):
-        return self.cost
-
-class Weapon(Item):
-    def __init__(self,name,damage,cost):
-        Item.__init__(self)
-        self.name = name
-        self.damage = damage
-        self.cost = cost
-
-    def get_damage(self):
-        return dice.roll(self.damage)
-    
-class Armor(Item):
-    def __init__(self, name, rating, cost):
-        Item.__init__(self)
-        self.name = name
-        self.rating = rating
-        self.cost = cost
-
-    def get_rating(self):
-        return self.rating

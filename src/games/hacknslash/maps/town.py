@@ -2,13 +2,12 @@ from map import *
 from characters import Character
 import dialog, NPC
 import core, combat
-from games.hacknslash.items import *
 
 class ArmorMerchant(NPC.Merchant):
     def __init__(self, sprite_name=None):
         NPC.Merchant.__init__(self, sprite_name)
         self.set_intro("Welcome to Ye Olde Armor Shoppe!  How may I be of service?")
-        self.set_item_list( (ToughShirt, DiamondPlate) )
+        self.set_item_list('A02', 'A03', 'A10')
 
     def purchased(self, armor):
         core.game.save_data.hero.equip_armor( armor )
@@ -17,7 +16,7 @@ class WeaponMerchant(NPC.Merchant):
     def __init__(self, sprite_name=None):
         NPC.Merchant.__init__(self, sprite_name)
         self.set_intro("Warrior, I have arms to sell.  Have you gold to buy?")
-        self.set_item_list( (Dagger, Dirk, LightSaber) )
+        self.set_item_list('W02','W03','W04','W10')
 
     def purchased(self, weapon):
         core.game.save_data.hero.equip_weapon( weapon )

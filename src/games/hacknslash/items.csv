@@ -1,0 +1,24 @@
+#id  Name             value  damage
+W01, Bare Hands,         0,    1d1  #   1 -   1
+W02, Dagger,            10,    1d5  #   1 -   5
+W03, Dirk,              25,    2d3  #   2 -   6
+W04, Stiletto,          50,    2d5  #   2 -  10
+W05, Mace,              75,    3d5  #   3 -  15
+W06, Rapier,           150,    5d4  #   5 -  20
+W07, Longsword,        300,   10d3  #  10 -  30
+W08, Razor Axe,        600,   15d3  #  15 -  45
+W09, Chainsaw,        1200,   25d3  #  25 -  75
+W10, Poison Dart Gun, 2400,   50d3  #  50 - 150
+W11, Phasor,          5000,  100d2  # 100 - 200
+
+#id  Name             value rating   
+A01, Nothing,            0, 0       
+A02, Cloth,             10, 1       
+A03, Tough Cloak,       25, 2       
+A04, Leather Armor,     50, 3       
+A05, Buckler,          100, 4       
+A06, Studded Leather,  250, 5       
+A07, Chainmail,        500, 6       
+A08, Plate,           1000, 7       
+A09, Diamond Armor,   2500, 8       
+A10, Angelic Aura,    5000, 9       

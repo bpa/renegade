@@ -1,6 +1,6 @@
 from map import *
 import dialog, random
-import game
+import game, items
 
 class Merchant(MapEntity):
     def __init__(self,image=None):
@@ -13,9 +13,9 @@ class Merchant(MapEntity):
     def set_intro(self, text):
         self.intro = text
 
-    def set_item_list(self, list):
-        self.item_list = list
-        self.item_names = map(self.item_text, list)
+    def set_item_list(self, *list):
+        self.item_list = items.get_items(*list)
+        self.item_names = map(lambda i: i.name, self.item_list)
         self.item_names.append('Never mind')
 
     def set_sell_factor(self, sell_factor):
@@ -33,7 +33,7 @@ class Merchant(MapEntity):
                 return
             item = self.item_list[choice]
             hero = game.save_data.hero
-            if item.cost <= hero.get_gold():
+            if item.value <= hero.get_gold():
                 hero.add_gold( -item.get_value() )
                 self.purchased(item)
             else:

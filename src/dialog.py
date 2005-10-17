@@ -193,3 +193,28 @@ class Dialog(object):
         self.window.destroy()
         self.bgwin.destroy()
         self.borderwin.destroy()
+
+class FpsDialog:
+    def __init__(self, width=170, height=40, x=5, y=5):
+        self.x = x
+        self.y = y
+        self.render = pygame.font.Font(None, 16).render
+        self.fg = pygame.color.Color('yellow')
+        self.bg = pygame.color.Color('black')
+        self.tr = pygame.color.Color('red')
+
+        self.window = core.wm.window(0,0,0,0)
+        self.window.draw = self.draw
+
+        self.bgwin = core.wm.window(width,height,x,y,z=1)
+        self.bgwin.image.fill(self.bg)
+        self.bgwin.image.set_alpha(128)
+
+    def draw(self, b):
+        x = self.x + 5
+        y = self.y
+        c = core.clock
+        f = self.render
+        b(f("FPS: %.1f" % c.get_fps(),True,self.fg), (x,y))
+        b(f("Render Time: %ims" % c.get_rawtime(),True,self.fg), (x,y+10))
+        b(f("Time between frames: %ims" % c.get_time(),True,self.fg), (x,y+20))

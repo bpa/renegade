@@ -9,30 +9,6 @@ except:
 from pygame.locals import HWSURFACE
 from pygame import color, Surface, Rect, font
 
-pygame.font.init()
-__f = font.Font(None, 16).render
-__y = color.Color("yellow")
-
-fps_win = None
-fps_color = color.Color("black")
-
-def init_fps_win():
-    global fps_win, fps_color
-    fps_win = Surface((165,35), HWSURFACE)
-    fps_win.set_alpha(180)
-
-def print_fps():
-    global fps_win, fps_color
-    if fps_win == None: init_fps_win()
-    c = core.clock
-    #b = core.screen.blit
-    b = fps_win.blit
-    fps_win.fill(fps_color)
-    b(__f("FPS: %.1f" % c.get_fps(),True,__y), (5,0))
-    b(__f("Render Time: %ims" % c.get_rawtime(),True,__y), (5,10))
-    b(__f("Time between frames: %ims" % c.get_time(),True,__y), (5,20))
-    core.screen.blit(fps_win, (5,0))
-
 class Window(Sprite):
   """Base class for windows.  Just assign a new function (or lambda) to update and have it draw the image."""
   def __init__(self, image, rect, z, wm):
@@ -54,6 +30,9 @@ class Window(Sprite):
 
   def update(self):
     pass
+
+  def draw(self, surface_blit):
+    surface_blit(self.image, self.rect)
 
   def set_event_mask(self, mask):
     pass
@@ -93,9 +72,7 @@ class Minimal(AbstractGroup):
 
   def draw(self):
     surface_blit = core.screen.blit
-    for s in self.zorder:
-        surface_blit(s.image, s.rect)
-    print_fps()
+    for s in self.zorder: s.draw(surface_blit)
     core.display.flip()
     core.clock.tick(20)
 

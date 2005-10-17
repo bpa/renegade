@@ -1,4 +1,3 @@
-import core
 import pygame
 from pygame import time
 from pygame.locals import *
@@ -8,7 +7,6 @@ from locals import *
 class EventUtil:
 
     def __init__(self):
-        self.clock = core.clock
         self.keys_pressed = pygame.key.get_pressed()
 	pygame.key.set_repeat(200, 200)
 

@@ -1,0 +1,4 @@
+#id  Name             value damage/rating
+W01, Empty Hands ,     10,   1d4  #   1 - 4
+A01, Iron Skin,        39,   3       
+A02, Headband,         3,    0       

@@ -1,9 +1,9 @@
-import os, pickle
+import os, pickle, sys
 from conf import *
 import core, events
 from pygame import mouse, font, time
 from locals import *
-import hud
+import hud, dialog, items
 
 # Global reference to the currently loaded save data
 #save_data = None
@@ -14,6 +14,7 @@ class SaveGameObject:
 
 class Game:
     def __init__(self):
+        items.init(os.path.dirname(sys.modules[self.__module__].__file__))
         self.name = "Renegade game"
         self.save_data = SaveGameObject()
         self.screen = core.wm.window(z=10)
@@ -51,6 +52,7 @@ class Game:
 
         print "Running map..."
         self.save_data.map.init()
+        fps = dialog.FpsDialog()
         clock = core.clock
         event_bag = events.EventUtil()
         self.event_bag = event_bag
