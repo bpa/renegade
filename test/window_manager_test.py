@@ -32,7 +32,7 @@ class WMTest(unittest.TestCase):
     front  = wm.window(z=0)
     middle = wm.window(z=2)
     back   = wm.window(z=1)
-    list = wm.zorder
+    list = wm.current_screen.zorder
     self.assertEqual(front,  list[2])
     self.assertEqual(middle, list[0])
     self.assertEqual(back,   list[1])
@@ -42,25 +42,21 @@ class WMTest(unittest.TestCase):
     win = wm.window()
     win.hide()
     win.show()
-    self.assertTrue(wm.spritedict.has_key(win))
-    self.assertTrue(wm.windows.spritedict.has_key(win))
-    self.assertEqual(1,len(wm.zorder))
+    self.assertTrue(wm.current_screen.spritedict.has_key(win))
+    self.assertEqual(1,len(wm.current_screen.zorder))
 
   def test_window_hide(self):
     wm = window_manager.Minimal()
     win = wm.window()
-    self.assertTrue(wm.spritedict.has_key(win))
-    self.assertTrue(wm.windows.spritedict.has_key(win))
+    self.assertTrue(wm.current_screen.spritedict.has_key(win))
     win.hide()
-    self.assertFalse(wm.spritedict.has_key(win))
-    self.assertTrue(wm.windows.spritedict.has_key(win))
-    self.assertEqual(0,len(wm.zorder))
+    self.assertFalse(wm.current_screen.spritedict.has_key(win))
+    self.assertEqual(0,len(wm.current_screen.zorder))
 
   def test_window_create(self):
     wm = window_manager.Minimal()
     win = wm.window()
-    self.assertTrue(wm.spritedict.has_key(win))
-    self.assertTrue(wm.windows.spritedict.has_key(win))
+    self.assertTrue(wm.current_screen.spritedict.has_key(win))
 
   def test_z_draw_order(self):
     wm = window_manager.Minimal()
@@ -121,3 +117,24 @@ class WMTest(unittest.TestCase):
     self.assertEqual(10,wr.top)
     self.assertEqual(15,wr.width)
     self.assertEqual(20,wr.height)
+
+  def test_screen(self):
+    list = []
+    core.screen.blit = lambda img, rect: list.append(rect)
+    wm = window_manager.Minimal()
+
+    r = Rect(0,0,5,5)
+    one = wm.window(r)
+    wm.set_screen("second")
+    r = Rect(5,5,5,5)
+    two = wm.window(r)
+
+    wm.draw()
+    self.assertEqual(1,len(list))
+    self.assertEquals( 5, list[0].top)
+
+    list = []
+    wm.set_screen("main")
+    wm.draw()
+    self.assertEqual(1,len(list))
+    self.assertEquals( 0, list[0].top)

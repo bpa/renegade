@@ -7,7 +7,7 @@ class ArmorMerchant(NPC.Merchant):
     def __init__(self, sprite_name=None):
         NPC.Merchant.__init__(self, sprite_name)
         self.set_intro("Welcome to Ye Olde Armor Shoppe!  How may I be of service?")
-        self.set_item_list('A02', 'A03', 'A10')
+        self.set_item_list(*map(lambda i: "A%02i"%i,range(2,11)))
 
     def purchased(self, armor):
         core.game.save_data.hero.equip_armor( armor )
@@ -16,14 +16,14 @@ class WeaponMerchant(NPC.Merchant):
     def __init__(self, sprite_name=None):
         NPC.Merchant.__init__(self, sprite_name)
         self.set_intro("Warrior, I have arms to sell.  Have you gold to buy?")
-        self.set_item_list('W02','W03','W04','W10')
+        self.set_item_list(*map(lambda i: "W%02i"%i,range(2,12)))
 
     def purchased(self, weapon):
         core.game.save_data.hero.equip_weapon( weapon )
 
 class AdventureTown(MapBase):
     def __init__(self):
-        MapBase.__init__(self,11,11)
+        MapBase.__init__(self,20,15)
         self.set_regen_rate(5)
         self.get_tiles_from_ascii(self.__ascii_art(),{
             '*': ('Castle_Set2',(5,0)),
@@ -56,8 +56,8 @@ class AdventureTown(MapBase):
         sprite.activate = self.walk_in_front_of_dude
 
         # Exit points
-        self.add_entry_listener(0,8, self.leave_town)
-        self.add_entry_listener(10,8, self.leave_town)
+        self.add_entry_listener(0,10, self.leave_town)
+        self.add_entry_listener(19,10, self.leave_town)
 
         # Random townsfolk
         tp = NPC.Townsperson()
@@ -129,7 +129,7 @@ class AdventureTown(MapBase):
                            "provided for you.  All in all, not a bad gig.")
     
     def leave_town(self):
-        core.game.teleport((8,4), 'overworld.Overworld')
+        core.game.teleport((10,5), 'overworld.Overworld')
 
     def random_fight(self):
         monster = combat.gallery.generate_monster(1)
@@ -141,14 +141,18 @@ class AdventureTown(MapBase):
 
     def __ascii_art(self):
         return (
-        "***********",
-        "*         *",
-        "* ------- *",
-        "* ------- *",
-        "* ------- *",
-        "* ------- *",
-        "*         *",
-        "*         *",
-        "           ",
-        "^^^^^^^^^^^",
-        "^^^^^^^^^^^")
+        "********************",
+        "*                  *",
+        "*                  *",
+        "*    ----------    *",
+        "*    ----------    *",
+        "*    ----------    *",
+        "*    ----------    *",
+        "*    ----------    *",
+        "*                  *",
+        "*                  *",
+        "                    ",
+        "^^^^^^^^^^^^^^^^^^^^",
+        "^^^^^^^^^^^^^^^^^^^^",
+        "^^^^^^^^^^^^^^^^^^^^",
+        "^^^^^^^^^^^^^^^^^^^^")

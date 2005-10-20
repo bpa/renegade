@@ -11,28 +11,27 @@ from pygame import color, Surface, Rect, font
 
 class Window(Sprite):
   """Base class for windows.  Just assign a new function (or lambda) to update and have it draw the image."""
-  def __init__(self, image, rect, z, wm):
+  def __init__(self, rect, z):
     Sprite.__init__(self)
-    self.image = image
     self.rect = rect
-    self.wm = wm
     self.z = z
+    core.wm.add(self)
   
   def show(self):
-    self.wm.show(self)
+    core.wm.show(self)
 
   def hide(self):
-    self.wm.hide(self)
+    core.wm.hide(self)
 
   def destroy(self):
     self.kill()
-    self.wm.sort_by_z()
+    core.wm.current_screen.sort_by_z()
 
   def update(self):
     pass
 
   def draw(self, surface_blit):
-    surface_blit(self.image, self.rect)
+    pass
 
   def set_event_mask(self, mask):
     pass
@@ -40,18 +39,18 @@ class Window(Sprite):
   def handle_event(self, event):
     pass
 
-class Minimal(AbstractGroup):
+class StaticWindow(Window):
+    def __init__(self, rect, z, flags):
+        Window.__init__(self,rect,z)
+        self.image = Surface((rect.width,rect.height),flags)
+
+    def draw(self, surface_blit):
+        surface_blit(self.image, self.rect)
+
+class WindowGroup(AbstractGroup):
   def __init__(self):
     AbstractGroup.__init__(self)
-    self.windows = RenderPlain()
     self.zorder = []
-    black = color.Color('Black')
-    core.screen.fill(black)
-    core.display.flip()
-
-  def add(self, sprite):
-    AbstractGroup.add(self, sprite)
-    self.sort_by_z()
 
   def sort_by_z(self):
     zorder = []
@@ -63,18 +62,41 @@ class Minimal(AbstractGroup):
   def reverse_z_sort_sprites(self, a, b):
   	return cmp(b.z, a.z)
 
-  def show(self, sprite):
-    self.add(sprite)
-
-  def hide(self, sprite):
-    self.remove(sprite)
-    self.sort_by_z()
-
   def draw(self):
     surface_blit = core.screen.blit
     for s in self.zorder: s.draw(surface_blit)
     core.display.flip()
     core.clock.tick(20)
+
+  def add(self,sprite):
+    AbstractGroup.add(self,sprite)
+    self.sort_by_z()
+
+  def remove(self,sprite):
+    AbstractGroup.remove(self,sprite)
+    self.sort_by_z()
+
+class Minimal:
+  def __init__(self):
+    self.screens = {}
+    self.set_screen('main')
+    black = color.Color('Black')
+    core.screen.fill(black)
+    core.display.flip()
+    core.wm = self
+
+  def set_screen(self, screen):
+    if self.screens.has_key(screen):
+      self.current_screen = self.screens[screen]
+    else:
+      self.current_screen = WindowGroup()
+      self.screens[screen] = self.current_screen
+    cs = self.current_screen
+    self.add  = cs.add
+    self.show = cs.add
+    self.hide = cs.remove
+    self.draw = cs.draw
+    self.update = cs.update
 
   def translate(self, full_size, win_size, position=None):
     if position == None and win_size.endswith('%'):
@@ -88,7 +110,6 @@ class Minimal(AbstractGroup):
     rect = Rect(0,0,0,0)
     if type(width) == type(rect):
       rect = width
-      image = Surface((rect.width,rect.height),flags)
     else:
       if width  == None: width  = core.screen.get_width()
       if height == None: height = core.screen.get_height()
@@ -104,9 +125,6 @@ class Minimal(AbstractGroup):
         y = self.translate(core.screen.get_height(),height,y)
       if x < 0: x = core.screen.get_width()  + x
       if y < 0: y = core.screen.get_height() + y
-      image = Surface((width,height),flags)
       rect = Rect(x,y,width,height)
-    win = Window(image,rect,z,self)
-    self.windows.add(win)
-    self.add(win)
+    win = StaticWindow(rect,z,flags)
     return win

@@ -6,8 +6,8 @@ import core
 
 def main():
     opts = {}
-    opts['height'] = 352
-    opts['width'] = 352
+    opts['width'] = 640
+    opts['height'] = 480
     opts['debug'] = 0
     opts['fullscreen'] = False
     game = process_args(opts)

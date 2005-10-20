@@ -15,7 +15,7 @@ class Merchant(MapEntity):
 
     def set_item_list(self, *list):
         self.item_list = items.get_items(*list)
-        self.item_names = map(lambda i: i.name, self.item_list)
+        self.item_names = map(lambda i: "%5i %s"%(i.value,i.name), self.item_list)
         self.item_names.append('Never mind')
 
     def set_sell_factor(self, sell_factor):
