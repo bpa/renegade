@@ -9,10 +9,12 @@ class __Display:
   def flip(self):
     pass
 
+  def set_caption(self, cap):
+    pass
+
 class __Surface:
   def __init__(self):
-    self.width = 32
-    self.height = 32
+    self.rect = pygame.Rect(0,0,32,32)
 
   def blit(*args):
     pass
@@ -21,10 +23,13 @@ class __Surface:
     pass
 
   def get_width(self, *args):
-    return self.width
+    return self.rect.width
 
   def get_height(self, *args):
-    return self.height
+    return self.rect.height
+
+  def get_rect(self):
+    return self.rect
 
 class __clock:
   def get_fps(self): return 20.0
@@ -39,7 +44,7 @@ class Mute:
         pass
 
 def init(opts={}):
-  pygame.display.init()
+  pygame.init()
   core.mixer = Mute()
   core.screen = __Surface()
   wm = window_manager.Minimal()

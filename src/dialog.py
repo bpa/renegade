@@ -7,12 +7,13 @@ from pygame.locals import RLEACCEL
 import dialog
 from math import pi
 from locals import *
+from window_manager import Window, StaticWindow
+import gc
 
 img = image.load("../data/edges-16x4.tga")
 colorkey = img.get_at((0,0))
 img.set_colorkey(colorkey, RLEACCEL)
 dialog.circle_border_image = img
-dialog.running = False
 
 def message(text):
     d = Dialog(text)
@@ -48,7 +49,7 @@ def draw_round_border(surface, width=4, color=None):
     draw.line(surface, color, (x1,bottom),(x2,bottom),4 )
     draw.line(surface, color, (right,y1),(right,y2),4 )
 
-class Dialog(object):
+class Dialog:
 
     def __init__(self, text, options=None):
         self.options = options
@@ -86,11 +87,6 @@ class Dialog(object):
         self.borderwin.image.fill(self.tr)
         dialog.draw_round_border(self.borderwin.image,color=self.fg)
         self.borderwin.image.set_colorkey(self.tr, RLEACCEL)
-
-    def __del__(self):
-        self.window.destroy()
-        self.bgwin.destroy()
-        self.borderwin.destroy()
 
     def hide(self):
         self.window.hide()
@@ -162,40 +158,35 @@ class Dialog(object):
 
     def run(self):
         self.window.show()
-        dialog.running = True
-        clock = core.clock
-        event_bag = core.game.event_bag
-        while True:
-            for event in event_bag.process_sdl_events():
-                if event.type == QUIT_EVENT and self.selection is None:
-                    self.dispose()
-                    return None
-                elif event.type == PUSH_ARROW_EVENT or \
-                     event.type == REPEAT_ARROW_EVENT:
-                    if event_bag.is_up():
-                        self.selection_up()
-                    elif event_bag.is_down():
-                        self.selection_down()
-                elif event.type == PUSH_ACTION_EVENT:
-                    self.dispose()
-                    if self.selection is not None:
-                        #return self.options[self.selection]
-                        return self.selection
-                    else: return None
-            
-            core.game.save_data.map.update()
-            core.wm.update()
-            core.wm.draw()
+        self.window.focus()
+        core.game.run(self.handle_event)
+        core.game.save_data.map.focus()
+        self.dispose()
+        if self.selection is not None:
+            return self.selection
+        else: return None
+
+    def handle_event(self, event):
+        if event.type == PUSH_ARROW_EVENT or \
+             event.type == REPEAT_ARROW_EVENT:
+            if core.event_bag.is_up():
+                self.selection_up()
+            elif core.event_bag.is_down():
+                self.selection_down()
+        elif event.type == PUSH_ACTION_EVENT:
+            return True
 
     def dispose(self):
-        dialog.running = False
         self.rendered = None
         self.window.destroy()
         self.bgwin.destroy()
         self.borderwin.destroy()
+        self.window.update = None
 
-class FpsDialog:
+class FpsDialog(Window):
     def __init__(self, width=170, height=40, x=5, y=5):
+        rect = Rect(x,y,width,height)
+        Window.__init__(self, rect, 0)
         self.x = x
         self.y = y
         self.render = pygame.font.Font(None, 16).render
@@ -203,10 +194,7 @@ class FpsDialog:
         self.bg = pygame.color.Color('black')
         self.tr = pygame.color.Color('red')
 
-        self.window = core.wm.window(0,0,0,0)
-        self.window.draw = self.draw
-
-        self.bgwin = core.wm.window(width,height,x,y,z=1)
+        self.bgwin = core.wm.window(width,height,x,y,z=1,name="FPS background")
         self.bgwin.image.fill(self.bg)
         self.bgwin.image.set_alpha(128)
 

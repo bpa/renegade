@@ -11,9 +11,8 @@ except ImportError, detail:
 
 class hacknslash(Game):
     def new_game(self):
-        hero = characters.Hero()
-        self.save_data.hero = hero
-        hero.add_gold(150)
+        self.save_data.hero = characters.Hero()
+        self.save_data.hero.add_gold(150)
         self.load_map('town.AdventureTown')
         self.save_data.character = map.MapEntity()
         self.save_data.character.init('stolen-01',2,0,-1)

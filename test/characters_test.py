@@ -1,6 +1,7 @@
 import unittest
 import types
 from characters import *
+import pickle
 
 class CharacterTest(unittest.TestCase):
 
@@ -25,3 +26,20 @@ class CharacterTest(unittest.TestCase):
     self.assertTrue(isinstance(hgold,types.IntType))
     hero.add_gold(gold)
     self.assertEqual(hgold + gold, hero.get_gold())
+
+  def test_pickle_hero(self):
+    hero = Hero()
+    hero.add_gold(12)
+
+    p = pickle.dumps(hero)
+    h2 = pickle.loads(p)
+
+    expected = hero.__dict__
+    actual = h2.__dict__
+    keys = expected.keys()
+    keys.remove('armor')
+    keys.remove('weapon')
+    for i in keys:
+      self.assertEqual(expected[i], actual[i])
+    self.assertTrue(actual.has_key('armor'))
+    self.assertTrue(actual.has_key('weapon'))

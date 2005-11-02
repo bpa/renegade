@@ -32,7 +32,7 @@ class Merchant(MapEntity):
                 dialog.message("Come back when you are ready to order!")
                 return
             item = self.item_list[choice]
-            hero = game.save_data.hero
+            hero = core.game.save_data.hero
             if item.value <= hero.get_gold():
                 hero.add_gold( -item.get_value() )
                 self.purchased(item)
@@ -40,7 +40,7 @@ class Merchant(MapEntity):
                 dialog.message('Come back when you have accumulated enough gold!')
 
     def do_sell(self):
-        all_items = game.save_data.hero.get_inventory()[:]
+        all_items = core.game.save_data.hero.get_inventory()[:]
         items = filter(lambda x: x.get_value()>0, all_items)
         item_names = map(self.sell_text, items)
         item_names.append('Never mind')

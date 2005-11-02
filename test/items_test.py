@@ -6,26 +6,26 @@ import os
 
 class ItemsTest(unittest.TestCase):
     def setUp(self):
-        items.init(os.path.dirname(__file__))
+        items.init(os.path.join(os.path.dirname(__file__),"testgame"))
 
     def tearDown(self):
         dir = os.path.dirname(__file__)
         try:
-          os.unlink(os.path.join(dir,"items.db"))
-          os.unlink(os.path.join(dir,"item_index.db"))
+          os.unlink(os.path.join(dir,"testgame","items.db"))
+          os.unlink(os.path.join(dir,"testgame","item_index.db"))
         except:
           pass
 
     def test_shelf_name(self):
         dir = os.path.dirname(__file__)
         try:
-          f = open(os.path.join(dir,"items.db"),"r")
+          f = open(os.path.join(dir,"testgame","items.db"),"r")
           f.close()
         except:
           raise
           self.fail("Database name wrong")
         try:
-          f = open(os.path.join(dir,"item_index.db"),"r")
+          f = open(os.path.join(dir,"testgame","item_index.db"),"r")
           f.close()
         except:
           self.fail("Index name wrong")

@@ -9,6 +9,9 @@ import events
 import menu
 import dialog
 from locals import *
+from window_manager import Window
+from weakref import proxy
+import gc, traceback
 
 SCROLL_EDGE=2
 NORTH=0
@@ -22,9 +25,8 @@ def add(a, b):
 
 class RenderEntity(RenderPlain):
     """Simple RenderPlain subclass that allows you to use image maps"""
-    def draw(self, surface):
+    def draw(self, surface_blit):
         spritedict = self.spritedict
-        surface_blit = surface.blit
         for s in spritedict.keys():
             surface_blit(s.image, s.rect, s.image_tile)
 
@@ -54,9 +56,22 @@ class MapEntity(Sprite):
        map event.  To do anything useful, subclass this"""
 
     def __init__(self, image_map=None):
+        self.name = self.__class__.__name__
         if image_map is not None:
             self.init(image_map)
            
+    def __getstate__(self):
+        dict = self.__dict__.copy()
+        dict.pop('map')
+        dict.pop('_Sprite__g')
+        dict.pop('image')
+        return dict
+
+    def __setstate__(self, dict):
+        self.__dict__ = dict
+        Sprite.__init__(self)
+        self.image = util.load_image(CHARACTERS_DIR, *self.image_args)
+
     def init(self,image_map,tile_x=0,tile_y=0,color_key=None):
         """MapEntity(Surface, tile_x, tile_y, direction)
        
@@ -72,6 +87,7 @@ class MapEntity(Sprite):
 
         image = util.load_image(CHARACTERS_DIR, image_map, True, color_key)
         Sprite.__init__(self)
+        self.image_args = (image_map, True, color_key)
         self.pos = (0,0)
         self.map = None
         self.image = image
@@ -84,11 +100,11 @@ class MapEntity(Sprite):
         self.face(NORTH)
         self.next_frame()
         self.velocity = (0,0)
-        self.speed = 5
+        self.speed = 4
         self.moving = False # For tile based motion
         self.always_animate = False
         self.animation_count = 1
-        self.animation_speed = 5
+        self.animation_speed = 4
         self.entered_tile = False
         self.can_trigger_actions = 0
 
@@ -113,8 +129,8 @@ class MapEntity(Sprite):
            or changing the direction its facing"""
         x, y = pos
         self.pos = pos
-        self.rect.top = (TILE_SIZE * y)
-        self.rect.left = (TILE_SIZE * x)
+        self.rect.top  = TILE_SIZE * (y - self.map.viewport.top)
+        self.rect.left = TILE_SIZE * (x - self.map.viewport.left)
 
     def move(self, direction, face_dir=True):
         """move(direction, face_direction=True)
@@ -179,7 +195,7 @@ class MapLocation(object):
     "One square on the overview map"
     def __init__(self, map, loc, tile, walkable=True):
         self.loc = loc
-        self.map = map
+        self.map = proxy(map)
         self.tile = tile
         self.x_base = loc[0] * TILE_SIZE
         self.y_base = loc[1] * TILE_SIZE
@@ -211,9 +227,9 @@ class MapLocation(object):
     def neighbor_west(self):
         return self.map.get( self.loc[0]-1, self.loc[1] )
 
-class MapBase:
+class MapBase(Window):
     def __init__(self, width, height, default_tile_name='floor'):
-        self.running = True
+        Window.__init__(self,None,10)
         self.tile_manager = TileManager()
         default_tile = self.tile_manager.get_tile(default_tile_name)
         self.tiles = []
@@ -254,11 +270,32 @@ class MapBase:
 #TODO Add non hardcoded values for buffer
 #TODO Make sure we don't make a larger surface than we need
 #TODO   Ex: 5x5 map
-            self.map_frames.append(Surface(((3+width) * TILE_SIZE, \
-                    (3+height) * TILE_SIZE)))
+            self.map_frames.append(Surface(((1+width) * TILE_SIZE, \
+                    (1+height) * TILE_SIZE)))
+
+    def __getstate__(self):
+        dict = {}
+        dict['width']  = self.width
+        dict['height'] = self.height
+        return dict
+  
+    def __setstate__(self, dict):
+        if self.__class__.__name__ == 'MapBase':
+          self.__init__(dict['width'],dict['height'])
+        else:
+          self.__init__()
+        self.blur_events()
 
     def dispose(self):
+        self.destroy()
+        del self.tiles
         self.tile_manager.clear()
+        del self.action_listeners
+        del self.entry_listeners
+        del self.movement_listeners
+        self.entities.empty()
+        self.non_passable_entities.empty()
+        self.character.map = None
     
     def set_regen_rate(self, rate):
         self.regen_rate = rate
@@ -295,6 +332,9 @@ class MapBase:
         self.character = character
         character.map = self
         character.can_trigger_actions = 1
+        if not self.viewport.collidepoint(pos):
+          self.viewport.center = pos
+          self.viewport.clamp_ip(self.dimentions)
         self.place_entity(character, pos, passable, direction)
         self.calculate_tile_coverage(self.viewport)
 
@@ -314,13 +354,13 @@ class MapBase:
 
     def update(self):
         """Invoked once per cycle of the event loop, to allow animation to update"""
-        if not dialog.running:
-          ebag = core.game.event_bag
-          if ebag.is_left(): self.move_character(WEST)
-          if ebag.is_right(): self.move_character(EAST)
-          if ebag.is_up(): self.move_character(NORTH)
-          if ebag.is_down(): self.move_character(SOUTH)
-        self.entities.update()
+        if self.character.entered_tile:
+            self.character.entered_tile = False
+            self.check_heal()
+            if self.entry_listeners.has_key( self.character.pos ):
+                self.entry_listeners[self.character.pos]()
+            for listener in self.movement_listeners:
+                listener()
         if self.scrolling:
             axis = self.scroll_axis
             diff = [0,0]
@@ -330,18 +370,18 @@ class MapBase:
             self.offset[axis] = self.offset[axis] + diff[axis]
             if not self.character.moving:
                 self.scrolling = False
+        if self.is_left(): self.move_character(WEST)
+        if self.is_right(): self.move_character(EAST)
+        if self.is_up(): self.move_character(NORTH)
+        if self.is_down(): self.move_character(SOUTH)
         if self.map_frames_dirty[self.frame]:
             self.build_current_frame()
             self.map_frames_dirty[self.frame] = False
-        if self.character is not None and self.character.entered_tile:
-            self.character.entered_tile = False
-            self.check_heal()
-            if self.entry_listeners.has_key( self.character.pos ):
-                self.entry_listeners[self.character.pos]()
-            for listener in self.movement_listeners:
-                listener()
-        core.game.screen.image.blit(self.map_frames[self.frame], (0,0), self.offset)
-        self.entities.draw(core.game.screen.image)
+        self.entities.update()
+
+    def draw(self, blit):
+      blit(self.map_frames[self.frame], (0,0), self.offset)
+      self.entities.draw(blit)
 
     def build_current_frame(self):
 #TODO Decide if map_tile_coverage is the right name for this
@@ -360,8 +400,8 @@ class MapBase:
             y = 0
 
     def init(self):
-        self.offset.width = core.game.screen.image.get_rect().width
-        self.offset.height = core.game.screen.image.get_rect().height
+        self.offset.width = core.screen.get_rect().width
+        self.offset.height = core.screen.get_rect().height
         self.entities.run_command('enter_map')
 
     def handle_event(self,event):
@@ -385,23 +425,26 @@ class MapBase:
         self.character.move(dir)
         if not self.scrolling:
             if self.character.moving:
+                nsr = self.map_non_scroll_region
                 x,y = self.character.pos
-                if dir % 2 == 0:
-                    y = self.character.pos[1]
-                    if y >= self.map_non_scroll_region.top and \
-                       y < self.map_non_scroll_region.bottom:
-                        return
-                    if y < SCROLL_EDGE or y >= self.height - SCROLL_EDGE:
-                        return
+
+                if dir % 2 == 0: # North or south
+                    if y <  nsr.bottom and \
+                       y >= nsr.top:
+                          return
+                    if y <  SCROLL_EDGE or \
+                       y >= self.height - SCROLL_EDGE:
+                          return
                     self.scroll_axis = 1
-                else:
-                    x = self.character.pos[0]
-                    if x >= self.map_non_scroll_region.left and \
-                       x < self.map_non_scroll_region.right:
-                        return
-                    if x < SCROLL_EDGE or x >= self.width - SCROLL_EDGE:
-                        return
+                else:            # East or west
+                    if x <  nsr.right and \
+                       x >= nsr.left:
+                          return
+                    if x <  SCROLL_EDGE or \
+                       x >= self.width - SCROLL_EDGE:
+                          return
                     self.scroll_axis = 0
+
                 self.scrolling = True
                 vector = MOVE_VECTORS[dir]
                 self.map_non_scroll_region.move_ip(vector)

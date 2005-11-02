@@ -1,6 +1,7 @@
 import unittest
 import window_manager, core
 from pygame import Rect
+import gc
 
 class WMTest(unittest.TestCase):
   def test_window_group_membership(self):
@@ -30,12 +31,13 @@ class WMTest(unittest.TestCase):
   def test_z_order(self):
     wm = window_manager.Minimal()
     front  = wm.window(z=0)
-    middle = wm.window(z=2)
-    back   = wm.window(z=1)
+    back   = wm.window(z=2)
+    middle = wm.window(z=1)
     list = wm.current_screen.zorder
+    map(lambda s: s.z, list)
     self.assertEqual(front,  list[2])
-    self.assertEqual(middle, list[0])
-    self.assertEqual(back,   list[1])
+    self.assertEqual(middle, list[1])
+    self.assertEqual(back,   list[0])
 
   def test_window_show(self):
     wm = window_manager.Minimal()
@@ -125,9 +127,12 @@ class WMTest(unittest.TestCase):
 
     r = Rect(0,0,5,5)
     one = wm.window(r)
+    self.assertEqual(1,len(wm.current_screen.zorder))
+
     wm.set_screen("second")
     r = Rect(5,5,5,5)
     two = wm.window(r)
+    self.assertEqual(1,len(wm.current_screen.zorder))
 
     wm.draw()
     self.assertEqual(1,len(list))
@@ -135,6 +140,22 @@ class WMTest(unittest.TestCase):
 
     list = []
     wm.set_screen("main")
+    self.assertEqual(1,len(wm.current_screen.zorder))
     wm.draw()
     self.assertEqual(1,len(list))
     self.assertEquals( 0, list[0].top)
+
+  def test_destroy(self):
+    wm = window_manager.Minimal()
+    one = wm.window()
+    one.focus()
+    
+    self.assertEqual(1,len(wm.current_screen.zorder))
+    self.assertEqual(1,len(wm.current_screen.spritedict))
+    self.assertEqual(one,wm.active_window)
+    one.destroy()
+
+    self.assertEqual(0,len(wm.current_screen.zorder))
+    self.assertEqual(0,len(wm.current_screen.lostsprites))
+    self.assertEqual(0,len(wm.current_screen.spritedict))
+    self.assertNotEqual(one,wm.active_window)

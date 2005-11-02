@@ -3,7 +3,6 @@ import dice
 import util
 from observing import Observable
 from conf import *
-from map import MapEntity
 from items import Weapon, Armor
 
 class Character(object):
@@ -94,6 +93,12 @@ class Hero(Observable, Character):
         self.exp_to_next_level = 10
         self.recalculate()
         self.heal()
+
+    def __getstate__(self):
+        dict = self.__dict__.copy()
+        if dict.has_key('_Observable__observers'):
+          dict.pop('_Observable__observers')
+        return dict
 
     def get_inventory(self):
         return self.inventory

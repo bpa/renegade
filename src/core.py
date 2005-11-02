@@ -9,6 +9,7 @@ wm = None
 game = None
 screen = None
 mixer = None
+event_bag = None
 clock = pygame.time.Clock()
 
 class Mute:
@@ -23,7 +24,11 @@ def init(opts={}):
         core.mixer = pygame.mixer
     else:
         core.mixer = Mute()
+    if not pygame.font:
+        print 'Unable to initialize font subsystem'
+        exit
         
+    pygame.mouse.set_visible(0)
     fullscreen = opts.get('fullscreen',0)
     width  = opts.get('width',  640)
     height = opts.get('height', 480)

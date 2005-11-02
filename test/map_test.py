@@ -1,16 +1,19 @@
 import unittest
 import map, core
+from testgame import TestGame
 from map import NORTH, SOUTH, EAST, WEST
 from pygame import Rect
+import gc, sys, pickle
+gc.set_debug(gc.DEBUG_UNCOLLECTABLE)
 
 class MapTest(unittest.TestCase):
   def setUp(self):
-    core.screen.width = 352
-    core.screen.height = 352
+    core.screen.rect.width = 352
+    core.screen.rect.height = 352
 
   def tearDown(self):
-    core.screen.width = 32
-    core.screen.height = 32
+    core.screen.rect.width = 32
+    core.screen.rect.height = 32
 
   def test_init(self):
     m = map.MapBase(50,50)
@@ -89,3 +92,42 @@ class MapTest(unittest.TestCase):
     m.calculate_tile_coverage(v)
     self.assertEqual(v.right + 1,c.right)
     self.assertEqual(25,c.centery)
+
+  def test_ref_count(self):
+    game = TestGame()
+
+    self.assertTrue(sys.getrefcount(game.save_data.map) > 1)
+    game.save_data.map.dispose()
+    self.assertEqual(2, sys.getrefcount(game.save_data.map))
+
+  def test_pickle_map(self):
+    game = TestGame()
+
+    p = pickle.dumps(game.save_data.map)
+    loaded = pickle.loads(p)
+
+    expected = game.save_data.map.__dict__
+    actual = loaded.__dict__
+    keys = expected.keys()
+    special = ['is_left','is_right','is_up','is_down','character','entities','tiles','non_passable_entities','tile_manager','offset','map_frames','sound']
+    for k in special:
+      keys.remove(k)
+      self.assertTrue(actual.has_key(k))
+    for i in keys:
+      self.assertEqual(expected[i], actual[i])
+
+  def test_pickle_map_entity(self):
+    game = TestGame()
+
+    p = pickle.dumps(game.save_data.map)
+    loaded = pickle.loads(p)
+
+    expected = game.save_data.map.__dict__
+    actual = loaded.__dict__
+    keys = expected.keys()
+    special = ['is_left','is_right','is_up','is_down','character','entities','tiles','non_passable_entities','tile_manager','offset','map_frames','sound']
+    for k in special:
+      keys.remove(k)
+      self.assertTrue(actual.has_key(k))
+    for i in keys:
+      self.assertEqual(expected[i], actual[i])
