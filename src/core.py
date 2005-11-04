@@ -20,9 +20,12 @@ class Mute:
 
 def init(opts={}):
     pygame.init()
-    if pygame.mixer.get_init():
-        core.mixer = pygame.mixer
-    else:
+    try:
+        if pygame.mixer.get_init():
+            core.mixer = pygame.mixer
+        else:
+            core.mixer = Mute()
+    except:
         core.mixer = Mute()
     if not pygame.font:
         print 'Unable to initialize font subsystem'
