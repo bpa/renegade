@@ -30,6 +30,9 @@ def init(opts={}):
     if not pygame.font:
         print 'Unable to initialize font subsystem'
         exit
+    if not pygame.image.get_extended():
+        print 'Missing dependency: SDL_image extended formats'
+        exit
         
     pygame.mouse.set_visible(0)
     fullscreen = opts.get('fullscreen',0)
