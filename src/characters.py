@@ -13,26 +13,46 @@ class Character(object):
       self.strength = 10
       self.agility = 10
       self.vitality = 10
-      self.weapon = Weapon('None','1d1',0)
-      self.armor = Armor('None',0,0)
+      self.inventory = []
+      self.weapon_loc = -1
+      self.armor_loc = -1
+      self.weapon = Weapon(0,"None")
+      self.armor = Armor(0,"None")
       self.gold = 0
       self.recalculate()
 
+    def get(self,field):
+        return self.__dict__[field]
+
+    def give_item(self, item):
+        self.inventory.append(item)
+
     def equip_weapon(self, weapon):
-        if self.weapon != None:
-            self.inventory.append(self.weapon)
-        self.weapon = weapon
+        self.weapon_loc = weapon
+        self.weapon = self.inventory[weapon]
         self.recalculate()
 
     def equip_armor(self, armor):
-        if self.armor != None:
-            self.inventory.append(self.armor)
-        self.armor = armor
+        self.armor_loc = armor
+        self.armor = self.inventory[armor]
+        self.recalculate()
+
+    def remove_weapon(self):
+        self.weapon_loc = -1
+        self.weapon = Weapon(0,"None")
+        self.recalculate()
+
+    def remove_armor(self):
+        self.armor_loc = -1
+        self.armor = Armor(0,"None")
         self.recalculate()
 
     def recalculate(self):
+        if self.armor_loc == -1: rating = 0
+        else:
+           rating = self.armor.get_rating()
         self.thaco = 30 - self.strength
-        self.ac = 20 - self.armor.get_rating() - self.agility
+        self.ac = 20 - rating - self.agility
         self.max_hp = 2 * self.vitality
 
     def damage(self, points):
@@ -88,7 +108,6 @@ class Monster(Character):
 class Hero(Observable, Character):
     def __init__(self):
         Character.__init__(self)
-        self.inventory = []
         self.exp = 0
         self.exp_to_next_level = 10
         self.recalculate()
@@ -113,8 +132,9 @@ class Hero(Observable, Character):
         #Being observable, we don't want to change variables
         #just to change them back
         if self.hp == self.max_hp: return
-        self.hp = self.hp + int(0.05 * self.max_hp)
-        if self.hp > self.max_hp: self.hp = self.max_hp
+        hp = self.hp + int(0.05 * self.max_hp)
+        if hp > self.max_hp: self.hp = self.max_hp
+        else: self.hp = hp
 
     def gain_exp(self, exp):
         self.exp = self.exp + exp

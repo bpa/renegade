@@ -1,6 +1,6 @@
 from map import *
 import dialog, random
-import game, items
+import core, items
 
 class Merchant(MapEntity):
     def __init__(self,image=None):
@@ -49,7 +49,7 @@ class Merchant(MapEntity):
             return
         else:
             item = items[choice]
-            hero = game.save_data.hero
+            hero = core.game.save_data.hero
             hero.get_inventory().remove(item)
             hero.add_gold( int(item.get_value()*self.sell_factor) )
             dialog.message('A bargain at twice the price!')
@@ -61,7 +61,7 @@ class Merchant(MapEntity):
         return '%d - %s' % (item.get_value(), item.get_name())
 
     def purchased(self, item):
-        pass
+        core.game.save_data.hero.give_item(item)
 
 class Townsperson(MapEntity):
     "A normal MapEntity that talks when activated and moves around on its own"

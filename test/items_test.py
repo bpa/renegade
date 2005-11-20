@@ -9,7 +9,10 @@ class ItemsTest(unittest.TestCase):
         items.init(os.path.join(os.path.dirname(__file__),"testgame"))
 
     def tearDown(self):
-        dir = os.path.dirname(__file__)
+        dir = os.path.join(os.path.dirname(__file__), "testgame")
+        for file in os.listdir(dir):
+          if file.startswith('item') and not file.endswith("csv"):
+            os.unlink(os.path.join(dir,file))
         try:
           os.unlink(os.path.join(dir,"testgame","items.db"))
           os.unlink(os.path.join(dir,"testgame","item_index.db"))

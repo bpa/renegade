@@ -114,12 +114,15 @@ class Minimal:
     core.display.flip()
     core.wm = self
     core.event_bag = events.EventUtil()
+    self.impending_actions = []
+    self.handle_event = self.ignore_events
 
   def focus(self, win):
     if self.active_window != None:
       self.active_window.blur_events()
     win.focus_events()
     self.active_window = win
+    self.handle_event = win.handle_event
     
   def blur(self, win):
     if self.active_window == None:
@@ -128,6 +131,7 @@ class Minimal:
        if self.active_window == win:
         self.active_window.blur_events()
         self.active_window = None
+    self.handle_event = self.ignore_events
     
   def set_screen(self, screen):
     if self.current_screen != None:
@@ -146,6 +150,27 @@ class Minimal:
     self.update = cs.update
     self.blur(None)
 
+  def run(self):
+    event_bag    = core.event_bag
+    flip_display = core.display.flip
+    clock_tick   = core.clock.tick
+    impending = self.impending_actions
+    self.running = True
+    while self.running:
+      if len(impending) > 0:
+        action = impending.pop(0)
+        action()
+      for event in event_bag.process_sdl_events():
+        self.handle_event(event)
+      self.update()
+      self.draw()
+      flip_display()
+      clock_tick(25)
+
+  def ignore_events(self, event):
+    if event.type == QUIT_EVENT:
+        self.running = False
+    
   def translate(self, full_size, win_size, position=None):
     if position == None and win_size.endswith('%'):
       return full_size * int(win_size[:-1]) / 100

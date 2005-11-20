@@ -109,7 +109,7 @@ class MapTest(unittest.TestCase):
     expected = game.save_data.map.__dict__
     actual = loaded.__dict__
     keys = expected.keys()
-    special = ['is_left','is_right','is_up','is_down','character','entities','tiles','non_passable_entities','tile_manager','offset','map_frames','sound']
+    special = ['is_left','is_right','is_up','is_down','character','entities','tiles','non_passable_entities','tile_manager','offset','map_frames','sound','save_data']
     for k in special:
       keys.remove(k)
       self.assertTrue(actual.has_key(k))
@@ -119,13 +119,14 @@ class MapTest(unittest.TestCase):
   def test_pickle_map_entity(self):
     game = TestGame()
 
-    p = pickle.dumps(game.save_data.map)
+    p = pickle.dumps(game.save_data.character)
     loaded = pickle.loads(p)
 
-    expected = game.save_data.map.__dict__
+    expected = game.save_data.character.__dict__
     actual = loaded.__dict__
     keys = expected.keys()
-    special = ['is_left','is_right','is_up','is_down','character','entities','tiles','non_passable_entities','tile_manager','offset','map_frames','sound']
+    keys.remove('map')
+    special = ['_Sprite__g','image']
     for k in special:
       keys.remove(k)
       self.assertTrue(actual.has_key(k))

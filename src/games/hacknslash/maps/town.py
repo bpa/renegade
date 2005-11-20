@@ -9,17 +9,11 @@ class ArmorMerchant(NPC.Merchant):
         self.set_intro("Welcome to Ye Olde Armor Shoppe!  How may I be of service?")
         self.set_item_list(*map(lambda i: "A%02i"%i,range(2,11)))
 
-    def purchased(self, armor):
-        core.game.save_data.hero.equip_armor( armor )
-
 class WeaponMerchant(NPC.Merchant):
     def __init__(self, sprite_name=None):
         NPC.Merchant.__init__(self, sprite_name)
         self.set_intro("Warrior, I have arms to sell.  Have you gold to buy?")
         self.set_item_list(*map(lambda i: "W%02i"%i,range(2,12)))
-
-    def purchased(self, weapon):
-        core.game.save_data.hero.equip_weapon( weapon )
 
 class AdventureTown(MapBase):
     def __init__(self):

@@ -11,7 +11,6 @@ import dialog
 from locals import *
 from window_manager import Window
 from weakref import proxy
-import gc, traceback
 
 SCROLL_EDGE=2
 NORTH=0
@@ -19,6 +18,8 @@ EAST=1
 SOUTH=2
 WEST=3
 MOVE_VECTORS = ((0,-1),(1,0),(0,1),(-1,0))
+
+class SaveObject: pass
 
 def add(a, b):
     return (a[0]+b[0], a[1]+b[1])
@@ -71,6 +72,7 @@ class MapEntity(Sprite):
         self.__dict__ = dict
         Sprite.__init__(self)
         self.image = util.load_image(CHARACTERS_DIR, *self.image_args)
+        self.animation_speed = 6
 
     def init(self,image_map,tile_x=0,tile_y=0,color_key=None):
         """MapEntity(Surface, tile_x, tile_y, direction)
@@ -104,7 +106,7 @@ class MapEntity(Sprite):
         self.moving = False # For tile based motion
         self.always_animate = False
         self.animation_count = 1
-        self.animation_speed = 4
+        self.animation_speed = 6
         self.entered_tile = False
         self.can_trigger_actions = 0
 
@@ -230,6 +232,7 @@ class MapLocation(object):
 class MapBase(Window):
     def __init__(self, width, height, default_tile_name='floor'):
         Window.__init__(self,None,10)
+        self.save_data = SaveObject()
         self.tile_manager = TileManager()
         default_tile = self.tile_manager.get_tile(default_tile_name)
         self.tiles = []
@@ -277,6 +280,7 @@ class MapBase(Window):
         dict = {}
         dict['width']  = self.width
         dict['height'] = self.height
+        dict['save_data'] = self.save_data
         return dict
   
     def __setstate__(self, dict):
@@ -284,6 +288,7 @@ class MapBase(Window):
           self.__init__(dict['width'],dict['height'])
         else:
           self.__init__()
+        self.save_data = dict['save_data']
         self.blur_events()
 
     def dispose(self):
@@ -407,6 +412,7 @@ class MapBase(Window):
     def handle_event(self,event):
         if event.type == PUSH_ACTION_EVENT: self.character_activate()
         if event.type == PUSH_ACTION2_EVENT: menu.run_main_menu()
+        if event.type == QUIT_EVENT: core.wm.running = False
 
     def check_heal(self):
         self.heal_points = self.heal_points + 1

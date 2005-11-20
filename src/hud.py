@@ -32,6 +32,7 @@ class HUD(StaticWindow):
         self.hero = hero
         hero.add_observer(self,['max_hp','hp','exp','level', \
                                 'gold','weapon','armor'])
+        self.update = self.real_update
 
     def handle_observation(self, hero, field, old, new):
         self.update = self.real_update

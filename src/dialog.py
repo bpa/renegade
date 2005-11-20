@@ -5,7 +5,6 @@ import pygame
 from pygame import image, Rect, draw
 from pygame.locals import RLEACCEL
 import dialog
-from math import pi
 from locals import *
 from window_manager import Window, StaticWindow
 import gc
@@ -24,30 +23,34 @@ def question(text, options):
     ret = d.run()
     return ret
 
-def draw_round_border(surface, width=4, color=None):
+def draw_round_border(surface, width=4, color=None, bounds=None):
+    """draw_round_border(Surface, line_width, Color, Rect) => None
+       only Surface is required"""
     h = surface.get_height()
     w = surface.get_width()
     img = dialog.circle_border_image
     if color == None: color = pygame.color.Color("white")
+    if bounds == None: bounds = surface.get_rect()
 
     r = Rect(0,0,8,8)
-    surface.blit(img, (0,0), r)
+    border = bounds.inflate(-8,-8)
+    border.topleft = bounds.topleft
+
+    surface.blit(img, border.topleft, r)
     r.top = 8
-    surface.blit(img, (0,h-8), r)
+    surface.blit(img, border.bottomleft, r)
     r.left = 8
-    surface.blit(img, (w-8,h-8), r)
+    surface.blit(img, border.bottomright, r)
     r.top = 0
-    surface.blit(img, (w-8,0), r)
+    surface.blit(img, border.topright, r)
     
-    x1 = y1 = 2 * width
-    x2 = w - x1 - 1
-    y2 = h - y1 - 1
-    bottom = h - width + 1
-    right  = w - width + 1
-    draw.line(surface, color, (x1,0),(x2,0),4 )
-    draw.line(surface, color, (0,y1),(0,y2),4 )
-    draw.line(surface, color, (x1,bottom),(x2,bottom),4 )
-    draw.line(surface, color, (right,y1),(right,y2),4 )
+    i = bounds.inflate(-17,-17)
+    o = bounds.inflate(-3,-3)
+    o.topleft = bounds.topleft
+    draw.line(surface, color, (i.left,o.top),(i.right,o.top),       4 )
+    draw.line(surface, color, (o.left,i.top),(o.left,i.bottom),     4 )
+    draw.line(surface, color, (i.left,o.bottom),(i.right,o.bottom), 4 )
+    draw.line(surface, color, (o.right,i.top),(o.right,i.bottom),   4 )
 
 class Dialog:
 
@@ -71,6 +74,7 @@ class Dialog:
 
         self.window = core.wm.window(half,self.rect.height,'center','center')
         self.window.update = self.update
+        self.window.handle_event = self.handle_event
         self.screen = self.window.image
         self.screen.set_colorkey(self.tr, RLEACCEL)
 
@@ -159,9 +163,10 @@ class Dialog:
     def run(self):
         self.window.show()
         self.window.focus()
-        core.game.run(self.handle_event)
-        core.game.save_data.map.focus()
+        core.wm.run()
+        core.wm.running = True
         self.dispose()
+        core.game.save_data.map.focus()
         if self.selection is not None:
             return self.selection
         else: return None
@@ -174,7 +179,7 @@ class Dialog:
             elif core.event_bag.is_down():
                 self.selection_down()
         elif event.type == PUSH_ACTION_EVENT:
-            return True
+            core.wm.running = False
 
     def dispose(self):
         self.rendered = None

@@ -17,7 +17,7 @@ class Cave(MapBase):
         self.add_entry_listener(5,9, self.exit_cave)
         self.add_entry_listener(5,41, self.fight_minotaur)
         self.add_movement_listener(self.movement)
-        self.monster_level = 1
+        self.save_data.monster_level = 1
 
         # Add markers to increment/decrement the monster level as you pass through caves
         self.add_entry_listener(10,3, self.check_level(EAST))
@@ -42,15 +42,17 @@ class Cave(MapBase):
 
     def check_level(self, direction):
         def temp():
+            level = self.save_data.monster_level
             if self.character.facing == direction:
-                self.monster_level = self.monster_level + 1
-            else: self.monster_level = self.monster_level - 1
-            if self.monster_level < 1: self.monster_level = 1
-            if self.monster_level > 20: self.monster_level = 20
+                level = level + 1
+            else: level = level - 1
+            if level < 1: level = 1
+            if level > 20: level = 20
+            self.save_data.monster_level = level
         return temp
            
     def movement(self):
-        if self.monster_level < 20 and dice.roll('2d6') >= 12:
+        if self.save_data.monster_level < 20 and dice.roll('2d6') >= 10:
             self.random_fight()
     
     def exit_cave(self):
@@ -68,7 +70,6 @@ class Cave(MapBase):
                 'siege by the forces of darkness.');
             dialog.message('Well, at least until they rise again.  Dark forces have a ' +
                 'nasty habit of doing that.  But by then, perhaps there will be a sequel.')
-            dialog.message('Thanks for playing Hack ''n Slash!')
             self.end_game()
         else:
             self.end_game()
@@ -76,10 +77,10 @@ class Cave(MapBase):
     def end_game(self):
         dialog.message('Thanks for playing Hack ''n Slash!')
         self.running = False
-        core.game.running = False
+        core.game.quit()
                    
     def random_fight(self):
-        monster = combat.gallery.generate_monster(self.monster_level)
+        monster = combat.gallery.generate_monster(self.save_data.monster_level)
         hero = core.game.save_data.hero
         fight = combat.Combat(hero, monster)
         result = fight.run()

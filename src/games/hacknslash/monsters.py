@@ -2,7 +2,6 @@ import combat, dice
 from characters import Monster
 
 def register_monsters():
-    print "Registering monsters"
     combat.gallery.add_monster( range(1,2), Snotling ) 
     combat.gallery.add_monster( range(1,3), LargeSlug ) 
     combat.gallery.add_monster( range(2,4), Jellyfish ) 

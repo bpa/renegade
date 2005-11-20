@@ -156,6 +156,5 @@ class WMTest(unittest.TestCase):
     one.destroy()
 
     self.assertEqual(0,len(wm.current_screen.zorder))
-    self.assertEqual(0,len(wm.current_screen.lostsprites))
     self.assertEqual(0,len(wm.current_screen.spritedict))
     self.assertNotEqual(one,wm.active_window)

@@ -5,14 +5,12 @@ from pygame import font, time
 from locals import *
 import hud, dialog, items
 import map
-import traceback
+from item_screen import InventoryScreen
 
 # Global reference to the currently loaded save data
 #save_data = None
 
-class SaveGameObject:
-    def __init__(self):
-        pass
+class SaveGameObject: pass
 
 class Game:
     def __init__(self):
@@ -25,13 +23,13 @@ class Game:
         try:
           self.load()
         except:
-          traceback.print_exc()
           self.new_game()
           self.save()
         self.hud = hud.HUD(self.save_data.hero)
         self.fps = dialog.FpsDialog()
         core.display.set_caption(self.name)
         self.impending_actions = []
+        self.inventory_screen = InventoryScreen()
 
     def open_save_game(self):
         try:
@@ -42,6 +40,13 @@ class Game:
       
     def new_game(self):
         pass
+
+    def start_new_game(self):
+        self.save_data.map.dispose()
+        self.save_data = SaveGameObject()
+        self.new_game()
+        self.save()
+        self.hud.set_hero(self.save_data.hero)
 
     def load_map(self,map_name):
         """Loads a map by name.  This should always have a module.
@@ -88,32 +93,18 @@ class Game:
     def handle_event(self, event):
         self.save_data.map.handle_event(event)
 
-    def run(self, handle_event=None):
-        if handle_event == None:
-          handle_event = self.handle_event
-        event_bag    = core.event_bag
-        wm_update    = core.wm.update
-        wm_draw      = core.wm.draw
-        flip_display = core.display.flip
-        clock_tick   = clock = core.clock.tick
-        impending = self.impending_actions
-        running = True
-        while running:
-          if len(impending) > 0:
-            action = impending.pop(0)
-            action()
-          for event in event_bag.process_sdl_events():
-              if event.type == QUIT_EVENT:
-                running = False
-              else:
-                if handle_event(event): running = False
-          wm_update()
-          wm_draw()
-          flip_display()
-          clock_tick(25)
+    def show_inventory(self):
+        self.inventory_screen.run()
+
+    def run(self):
+        self.save_data.map.focus()
+        core.wm.run()
+
+    def quit(self):
+        core.wm.running = False
 
     def teleport(self, loc, map_name=None, dir=None):
-        self.impending_actions.append(lambda: self.__teleport(loc,map_name,dir))
+        core.wm.impending_actions.append(lambda: self.__teleport(loc,map_name,dir))
         self.save_data.map.blur()
 
     def __teleport(self, loc, map_name, dir):
