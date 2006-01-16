@@ -26,7 +26,7 @@ class Game:
           self.new_game()
           self.save()
         self.hud = hud.HUD(self.save_data.hero)
-        self.fps = dialog.FpsDialog()
+        #self.fps = dialog.FpsDialog()
         core.display.set_caption(self.name)
         self.impending_actions = []
         self.inventory_screen = InventoryScreen()
@@ -47,6 +47,8 @@ class Game:
         self.new_game()
         self.save()
         self.hud.set_hero(self.save_data.hero)
+        for k in self.save_game.keys():
+            del self.save_game[k]
 
     def load_map(self,map_name):
         """Loads a map by name.  This should always have a module.
@@ -115,7 +117,11 @@ class Game:
         if dir is None:
             dir = dude.facing
         if map_name is not None:
+          module = self.save_data.map.__module__.rsplit('.',1)[1]
+          map = self.save_data.map.__class__.__name__
+          self.save_game['map-%s.%s' % (module,map)] = self.save_data.map
           self.save_data.map.dispose()
           self.load_map(map_name)
         self.save_data.map.place_character(dude, loc, False, dir)
         self.save_data.map.focus()
+        self.save()

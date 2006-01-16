@@ -280,6 +280,8 @@ class MapBase(Window):
         dict = {}
         dict['width']  = self.width
         dict['height'] = self.height
+        dict['offset.width'] = self.offset.width
+        dict['offset.height'] = self.offset.height
         dict['save_data'] = self.save_data
         return dict
   
@@ -289,6 +291,8 @@ class MapBase(Window):
         else:
           self.__init__()
         self.save_data = dict['save_data']
+        self.offset.width = dict['offset.width']
+        self.offset.height = dict['offset.height']
         self.blur_events()
 
     def dispose(self):
